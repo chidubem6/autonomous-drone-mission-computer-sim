@@ -56,8 +56,8 @@
 - status: practicing
 - depends-on: none
 - introduced: —
-- last-reviewed: 2026-09-13
-- evidence: self-reported — built a CLI number toolkit in C
+- last-reviewed: 2026-09-14
+- evidence: self-reported — built a CLI number toolkit in C; 2026-09-14 wrote drone.c unaided but omitted the trailing newline the spec asked for, then added it after reasoning about why it matters downstream
 
 ## floating-point-numbers
 - status: seed
@@ -70,8 +70,29 @@
 - status: practicing
 - depends-on: compiled-vs-interpreted
 - introduced: —
-- last-reviewed: 2026-09-13
-- evidence: self-reported — compiles and runs C from the terminal with gcc
+- last-reviewed: 2026-09-14
+- evidence: self-reported — compiles and runs C from the terminal with gcc; 2026-09-14 built src/drone.c in WSL with -Wall -Wextra -std=c11 and ran it. Also met the Linux/Windows difference — Linux marks a file executable with a permission bit, Windows with the .exe suffix — and asked a good unprompted follow-up about when .exe would appear
+
+## compilation-stages
+- status: introduced
+- depends-on: compiling-c
+- introduced: 2026-09-14
+- last-reviewed: 2026-09-14
+- evidence: predicted a .obj file would be left behind after compiling; corrected to the four stages (preprocess, compile, assemble, link) that gcc runs in one command, deleting the intermediate. Object files reappear deliberately in task 1.5
+
+## compiler-warnings
+- status: introduced
+- depends-on: compiling-c
+- introduced: 2026-09-14
+- last-reviewed: —
+- evidence: explained why -Wall -Wextra are non-optional in C, a language that compiles obviously wrong code without complaint. Used on the first build; no warning has actually fired yet
+
+## project-structure
+- status: introduced
+- depends-on: none
+- introduced: 2026-09-14
+- last-reviewed: —
+- evidence: created src/ after the three-folder layout (src/ engine, server/ node, public/ dashboard) was explained in terms of what the Dockerfile will need to say in section 8
 
 ## makefile
 - status: seed
@@ -270,11 +291,11 @@
 - evidence: —
 
 ## line-based-protocol
-- status: seed
+- status: introduced
 - depends-on: data-contract
-- introduced: —
-- last-reviewed: —
-- evidence: —
+- introduced: 2026-09-14
+- last-reviewed: 2026-09-14
+- evidence: asked what a missing newline would do to a line-reading server, answered that it would read the wrong number of lines and get a bad format — right direction, sharpened to the real failure: the newline IS the delimiter, so the reader waits forever for an end that never comes
 
 ## nodejs
 - status: introduced
@@ -406,8 +427,8 @@
 - status: introduced
 - depends-on: none
 - introduced: 2026-09-13
-- last-reviewed: 2026-09-13
-- evidence: trunk component #7, revisited during the deployment decision — Docker shrinks the gap by making both environments the same machine
+- last-reviewed: 2026-09-14
+- evidence: trunk component #7, revisited during the deployment decision — Docker shrinks the gap by making both environments the same machine. 2026-09-14 the gap shrank for real: builds moved to WSL (Ubuntu 24.04), the same operating system the section 8 container runs
 
 ## docker
 - status: introduced
@@ -491,7 +512,7 @@
 - depends-on: git-staging-area
 - introduced: 2026-09-14
 - last-reviewed: 2026-09-14
-- evidence: filled in the `*.exe` pattern correctly by generalising from the `*.o` line; needed a second pass to remove the stale TODO block, which prompted a note about leaving finished instructions in files
+- evidence: filled in the `*.exe` pattern correctly by generalising from the `*.o` line; needed a second pass to remove the stale TODO block, which prompted a note about leaving finished instructions in files. Later the same day predicted correctly that the new Linux binary would show as untracked because *.exe could not match it, then replaced the dead rule with /drone
 
 ## line-endings-lf-crlf
 - status: introduced

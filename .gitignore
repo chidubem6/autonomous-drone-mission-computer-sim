@@ -4,5 +4,6 @@
 # Object files — the half-compiled intermediate step between source and program
 *.o
 
-# Executable files - fully compiled programs
-*.exe
+
+# Linux executable of drone.c
+/drone

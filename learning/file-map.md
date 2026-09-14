@@ -12,6 +12,9 @@
 - .gitignore — known (2026-09-14) — which machine-produced files git must never track → [[gitignore]]
 - .gitattributes — known (2026-09-14) — forces LF line endings repo-wide so the Linux build never meets a carriage return → [[line-endings-lf-crlf]]
 - .git/ — generated — git's own storage: every commit and every past version of every file lives here, never edited by hand → [[git-repository]]
+- src/ — known (2026-09-14) — the C engine's source: the drone's onboard computer → [[project-structure]]
+- src/drone.c — known (2026-09-14) — the engine itself; right now it prints one identifying line and exits
+- drone — generated — the compiled engine, rebuilt from src/ by gcc and never committed → [[compiling-c]]
 
 <!-- Nothing else exists yet. Section 1 adds the git repository, the Makefile,
      and the first engine source files; every one of them gets a line here the

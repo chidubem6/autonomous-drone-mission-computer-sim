@@ -17,7 +17,7 @@
 **Concepts:** git-repository, git-commit, makefile, compiling-c, struct, header-files, printf-format
 **Tasks:**
 - [x] 1.1 Initialize the git repository and commit the learning files
-- [ ] 1.2 A first C file that compiles and prints, built by hand with gcc
+- [x] 1.2 A first C file that compiles and prints, built by hand with gcc
 - [ ] 1.3 The drone state struct, living in its own header file
 - [ ] 1.4 Print one line of real drone state with formatted output
 - [ ] 1.5 A Makefile, so one command builds the whole thing
