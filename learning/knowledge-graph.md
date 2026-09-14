@@ -21,22 +21,43 @@
 - status: practicing
 - depends-on: manual-memory-management
 - introduced: —
-- last-reviewed: 2026-09-13
-- evidence: self-reported — currently attempting to implement pointers and reading up on them
+- last-reviewed: 2026-09-14
+- evidence: self-reported — currently attempting to implement pointers and reading up on them. 2026-09-14 asked directly about `*` in declarations vs expressions and about `struct Node *next`; was given the address/dereference distinction, the `->` shorthand, and the pass-by-value argument for why section 2's tick function must take a DroneState *. Explanation received, not yet demonstrated in their own code
 
 ## struct
-- status: seed
+- status: practicing
 - depends-on: none
-- introduced: —
-- last-reviewed: —
-- evidence: —
+- introduced: 2026-09-14
+- last-reviewed: 2026-09-14
+- evidence: wrote the six-field DroneState unaided from a two-field pattern, units carried in the field names, and initialised it with designated initialisers. Caught nothing wrong with `speed_ms` until it was pointed out that `ms` reads as milliseconds; renamed to `speed_mps`
 
 ## header-files
-- status: seed
-- depends-on: none
-- introduced: —
-- last-reviewed: —
-- evidence: —
+- status: practicing
+- depends-on: struct
+- introduced: 2026-09-14
+- last-reviewed: 2026-09-14
+- evidence: wrote src/drone.h and included it from drone.c with quotes rather than angle brackets, after the "next to this file" vs "system directories" distinction
+
+## preprocessor
+- status: introduced
+- depends-on: compilation-stages
+- introduced: 2026-09-14
+- last-reviewed: 2026-09-14
+- evidence: worked with #include as literal text substitution rather than an import system — the basis for reasoning about double inclusion
+
+## include-guards
+- status: practicing
+- depends-on: preprocessor
+- introduced: 2026-09-14
+- last-reviewed: 2026-09-14
+- evidence: predicted the section 3 double-inclusion problem before being told — nav.h includes drone.h, drone.c includes both, so the struct arrives twice — then wrote the #ifndef/#define/#endif guard, closing #endif with a naming comment
+
+## undefined-behaviour
+- status: introduced
+- depends-on: compiler-warnings
+- introduced: 2026-09-14
+- last-reviewed: 2026-09-14
+- evidence: deliberate %d-on-a-double break. Predicted compile and run correctly but expected C to silently convert the double to an int; the real output was garbage (6 here, 2102178464 on their run). Asked unprompted why the value varies between machines and runs, which earned the calling-convention answer: doubles travel in floating-point registers, %d reads the integer slot, and finds leftovers
 
 ## arrays-of-structs
 - status: seed
@@ -57,14 +78,14 @@
 - depends-on: none
 - introduced: —
 - last-reviewed: 2026-09-14
-- evidence: self-reported — built a CLI number toolkit in C; 2026-09-14 wrote drone.c unaided but omitted the trailing newline the spec asked for, then added it after reasoning about why it matters downstream
+- evidence: self-reported — built a CLI number toolkit in C; 2026-09-14 wrote drone.c unaided but omitted the trailing newline the spec asked for, then added it after reasoning about why it matters downstream. Later met the variadic-function consequence: printf has no type information for its arguments, because the types are decided by a runtime string, so a wrong specifier cannot be converted or caught by the language itself
 
 ## floating-point-numbers
-- status: seed
+- status: introduced
 - depends-on: none
-- introduced: —
-- last-reviewed: —
-- evidence: —
+- introduced: 2026-09-14
+- last-reviewed: 2026-09-14
+- evidence: every DroneState field is a double because the drone moves 0.5 m per tick — integers would round every tick to nothing. Applied but not yet independently reasoned about
 
 ## compiling-c
 - status: practicing
@@ -81,11 +102,11 @@
 - evidence: predicted a .obj file would be left behind after compiling; corrected to the four stages (preprocess, compile, assemble, link) that gcc runs in one command, deleting the intermediate. Object files reappear deliberately in task 1.5
 
 ## compiler-warnings
-- status: introduced
+- status: practicing
 - depends-on: compiling-c
 - introduced: 2026-09-14
-- last-reviewed: —
-- evidence: explained why -Wall -Wextra are non-optional in C, a language that compiles obviously wrong code without complaint. Used on the first build; no warning has actually fired yet
+- last-reviewed: 2026-09-14
+- evidence: watched -Wformat fire on a deliberate %d/double mismatch and saw the program still build and print nonsense, then adopted -Werror so a warning cannot be scrolled past. Also saw the limit of the tool: a stray `!` inside a format string passed every flag, because the compiler checks well-formedness, never intent
 
 ## project-structure
 - status: introduced

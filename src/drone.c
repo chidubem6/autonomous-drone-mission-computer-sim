@@ -1,14 +1,22 @@
 /*
  * drone.c — the simulation engine: the drone's onboard computer.
- *
- * Right now it does the smallest useful thing — proves the toolchain works
- * end to end, from source file to running program. Everything else in this
- * project gets built on top of a file that compiles.
- *
  */
 #include <stdio.h>
+#include "drone.h"
 
 int main(void) {
+    DroneState drone = {
+        .x_m = 0.0,
+        .y_m = 0.0,
+        .altitude_m = 0.0,
+        .heading_deg = 0.0,
+        .speed_mps = 0.0,
+        .battery_percent = 100.0
+    };
+
     printf("DRONE-01 online\n");
+
+    printf("%.1f\n", drone.battery_percent);
+
     return 0;
 }
