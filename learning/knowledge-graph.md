@@ -521,6 +521,13 @@
 - last-reviewed: 2026-09-14
 - evidence: triggered by git's CRLF warning on first `git add`; predicted correctly that Linux would try to read the carriage return and fail, though not the specific `bad interpreter` shape of the error. Fix (.gitattributes with eol=lf) was dictated, not derived
 
+## git-identity-config
+- status: introduced
+- depends-on: git-commit
+- introduced: 2026-09-14
+- last-reviewed: 2026-09-14
+- evidence: committing from WSL prompted for name and email, because WSL has its own home directory and its own ~/.gitconfig separate from Windows git. Asked unprompted whether the new identity matched earlier commits, and verified it with `git log --format`
+
 ## readme
 - status: seed
 - depends-on: none
