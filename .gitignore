@@ -1,0 +1,8 @@
+# Files git should never track. Everything here is produced by the build and
+# can always be regenerated from the source files we DO track.
+
+# Object files — the half-compiled intermediate step between source and program
+*.o
+
+# Executable files - fully compiled programs
+*.exe
