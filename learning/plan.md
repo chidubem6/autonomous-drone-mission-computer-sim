@@ -16,7 +16,7 @@
 **Deliverable:** `make` builds the project, and running it prints one line of drone state to the terminal.
 **Concepts:** git-repository, git-commit, makefile, compiling-c, struct, header-files, printf-format
 **Tasks:**
-- [ ] 1.1 Initialize the git repository and commit the learning files
+- [x] 1.1 Initialize the git repository and commit the learning files
 - [ ] 1.2 A first C file that compiles and prints, built by hand with gcc
 - [ ] 1.3 The drone state struct, living in its own header file
 - [ ] 1.4 Print one line of real drone state with formatted output

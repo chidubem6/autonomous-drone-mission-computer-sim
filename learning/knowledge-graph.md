@@ -469,15 +469,36 @@
 - status: practicing
 - depends-on: none
 - introduced: —
-- last-reviewed: 2026-09-13
-- evidence: self-reported — uses git frequently
+- last-reviewed: 2026-09-14
+- evidence: self-reported — uses git frequently; 2026-09-14 explained unprompted that zipping the project while skipping hidden folders delivers the files but loses the history, because the repository *is* the .git folder
 
 ## git-commit
 - status: practicing
 - depends-on: git-repository
 - introduced: —
-- last-reviewed: 2026-09-13
-- evidence: self-reported — uses git frequently
+- last-reviewed: 2026-09-14
+- evidence: self-reported — uses git frequently; 2026-09-14 wrote and ran the repository's root commit, message authored themselves in the present-tense convention
+
+## git-staging-area
+- status: introduced
+- depends-on: git-repository
+- introduced: 2026-09-14
+- last-reviewed: 2026-09-14
+- evidence: correctly predicted that `git status` would list two untracked items rather than five, because git collapses an untracked directory into a single entry
+
+## gitignore
+- status: practicing
+- depends-on: git-staging-area
+- introduced: 2026-09-14
+- last-reviewed: 2026-09-14
+- evidence: filled in the `*.exe` pattern correctly by generalising from the `*.o` line; needed a second pass to remove the stale TODO block, which prompted a note about leaving finished instructions in files
+
+## line-endings-lf-crlf
+- status: introduced
+- depends-on: gitignore
+- introduced: 2026-09-14
+- last-reviewed: 2026-09-14
+- evidence: triggered by git's CRLF warning on first `git add`; predicted correctly that Linux would try to read the carriage return and fail, though not the specific `bad interpreter` shape of the error. Fix (.gitattributes with eol=lf) was dictated, not derived
 
 ## readme
 - status: seed

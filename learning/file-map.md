@@ -8,6 +8,10 @@
 - learning/plan.md — known (2026-09-13) — the locked stack decisions and the nine build sections → [[writing-a-plan]]
 - learning/knowledge-graph.md — known (2026-09-13) — the living map of what is actually understood, updated every lesson
 - learning/file-map.md — known (2026-09-13) — this file: why every file in the repo exists
+- learning/environment.md — known (2026-09-14) — records that this machine runs Git Bash, so every lesson dictates commands in the right dialect
+- .gitignore — known (2026-09-14) — which machine-produced files git must never track → [[gitignore]]
+- .gitattributes — known (2026-09-14) — forces LF line endings repo-wide so the Linux build never meets a carriage return → [[line-endings-lf-crlf]]
+- .git/ — generated — git's own storage: every commit and every past version of every file lives here, never edited by hand → [[git-repository]]
 
 <!-- Nothing else exists yet. Section 1 adds the git repository, the Makefile,
      and the first engine source files; every one of them gets a line here the
