@@ -4,6 +4,12 @@
 #include <stdio.h>
 #include "drone.h"
 
+/* Print one line describing everything the drone knows about itself. */
+void print_state(const DroneState *d) {
+    printf("POS %6.1f,%6.1f   ALT %5.1f m   HDG %5.1f deg   SPD %6.1f m/s   BAT %5.1f %%\n", 
+        d->x_m, d->y_m, d->altitude_m, d->heading_deg, d->speed_mps, d->battery_percent);
+}
+
 int main(void) {
     DroneState drone = {
         .x_m = 0.0,
@@ -16,7 +22,7 @@ int main(void) {
 
     printf("DRONE-01 online\n");
 
-    printf("%.1f\n", drone.battery_percent);
+    print_state(&drone);
 
     return 0;
 }

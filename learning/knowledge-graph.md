@@ -22,7 +22,14 @@
 - depends-on: manual-memory-management
 - introduced: —
 - last-reviewed: 2026-09-14
-- evidence: self-reported — currently attempting to implement pointers and reading up on them. 2026-09-14 asked directly about `*` in declarations vs expressions and about `struct Node *next`; was given the address/dereference distinction, the `->` shorthand, and the pass-by-value argument for why section 2's tick function must take a DroneState *. Explanation received, not yet demonstrated in their own code
+- evidence: self-reported — currently attempting to implement pointers and reading up on them. 2026-09-14 asked directly about `*` in declarations vs expressions and about `struct Node *next`; was given the address/dereference distinction, the `->` shorthand, and the pass-by-value argument for why section 2's tick function must take a DroneState *. Then wrote print_state(const DroneState *d) themselves — six `d->field` reads and a `print_state(&drone)` call site, all correct first time, no prompting on the `&`
+
+## const-correctness
+- status: introduced
+- depends-on: pointers
+- introduced: 2026-09-14
+- last-reviewed: —
+- evidence: used `const DroneState *d` on print_state after the rationale — a compiler-enforced promise not to modify, and the contrast that will make section 2's un-const `update(DroneState *)` legible. Applied as given, not yet independently reasoned about
 
 ## struct
 - status: practicing
@@ -78,7 +85,7 @@
 - depends-on: none
 - introduced: —
 - last-reviewed: 2026-09-14
-- evidence: self-reported — built a CLI number toolkit in C; 2026-09-14 wrote drone.c unaided but omitted the trailing newline the spec asked for, then added it after reasoning about why it matters downstream. Later met the variadic-function consequence: printf has no type information for its arguments, because the types are decided by a runtime string, so a wrong specifier cannot be converted or caught by the language itself
+- evidence: self-reported — built a CLI number toolkit in C; 2026-09-14 wrote drone.c unaided but omitted the trailing newline the spec asked for, then added it after reasoning about why it matters downstream. Later met the variadic-function consequence: printf has no type information for its arguments, because the types are decided by a runtime string, so a wrong specifier cannot be converted or caught by the language itself. Task 1.4 went deep on formatting: used `%%` for a literal percent unprompted, predicted correctly that growing values would shift the columns, then worked through field widths over several passes — that a width is a MINIMUM and printf never truncates, that numbers right-align and text left-aligns, and that literal text between conversions is not counted in any field width. Asked good questions at each step rather than accepting the rule
 
 ## floating-point-numbers
 - status: introduced
