@@ -8,7 +8,12 @@
 /* How fast the drone climbs while taking off, in metres per second. */
 #define CLIMB_RATE_MPS 2.0
 
+/* The duration of each simulation tick, in seconds. */
 #define TICK_S 0.05
+
+/* Battery consumed per second, as a percentage. A full charge
+   lasts about 20 minutes (1200s). */
+#define DRAIN_RATE_PCT_PER_S (100.0 / 1200)
 
 /* Print one line describing everything the drone knows about itself. */
 void print_state(const DroneState *d) {
@@ -21,7 +26,18 @@ void print_state(const DroneState *d) {
  * so edit the state into how it will be at the end of that slice.
  */
 void tick(DroneState *d, double dt) {
-       d->altitude_m += CLIMB_RATE_MPS * dt;
+
+    d->altitude_m += CLIMB_RATE_MPS * dt;
+
+    /* TODO(you): drain this tick's share of the battery. Same shape as the
+        line above, pointing the other way. */
+    d->battery_percent -= DRAIN_RATE_PCT_PER_S * dt;
+
+    /* TODO(you): a battery cannot hold less than nothing. If it has gone
+       below empty, put it back to empty. */
+    if (d->battery_percent < 0) {
+        d->battery_percent = 0.0;
+    }
 }
 
 int main(void) {

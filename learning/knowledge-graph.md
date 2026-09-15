@@ -22,7 +22,7 @@
 - depends-on: manual-memory-management
 - introduced: —
 - last-reviewed: 2026-09-15
-- evidence: self-reported — currently attempting to implement pointers and reading up on them. 2026-09-14 asked directly about `*` in declarations vs expressions and about `struct Node *next`; was given the address/dereference distinction, the `->` shorthand, and the pass-by-value argument for why section 2's tick function must take a DroneState *. Then wrote print_state(const DroneState *d) themselves — six `d->field` reads and a `print_state(&drone)` call site, all correct first time, no prompting on the `&`. 2026-09-15 wrote the tick signature `void tick(DroneState *d, ...)` from the print_state pattern, and every call site as `tick(&drone, 0.05)` — six correct `&` uses, no prompting
+- evidence: self-reported — currently attempting to implement pointers and reading up on them. 2026-09-14 asked directly about `*` in declarations vs expressions and about `struct Node *next`; was given the address/dereference distinction, the `->` shorthand, and the pass-by-value argument for why section 2's tick function must take a DroneState *. Then wrote print_state(const DroneState *d) themselves — six `d->field` reads and a `print_state(&drone)` call site, all correct first time, no prompting on the `&`. 2026-09-15 wrote the tick signature `void tick(DroneState *d, ...)` from the print_state pattern, and every call site as `tick(&drone, 0.05)` — six correct `&` uses, no prompting. 2026-09-15 wrote the clamp as `if (battery < 0)` — a bare name with nothing in scope — and corrected to `d->battery_percent` once reminded that only d and dt exist inside tick(). Struct fields are not loose variables; the pointer is the only route in
 
 ## const-correctness
 - status: practicing
@@ -179,11 +179,11 @@
 - evidence: wrote `usleep(TICK_S * 1000000);` — got the seconds-to-microseconds conversion after one hint about the direction, and expressed it from TICK_S rather than a literal so the two cannot drift. Needed the semicolon pointed out. Met the framing that C has no way to wait: sleeping is an OS service, which is why it lives in <unistd.h> and not the C standard library
 
 ## battery-model
-- status: seed
+- status: practicing
 - depends-on: delta-time
-- introduced: —
-- last-reviewed: —
-- evidence: —
+- introduced: 2026-09-15
+- last-reviewed: 2026-09-15
+- evidence: derived the drain rate from a hardware spec rather than inventing it — given "a small quadcopter flies about 20 minutes", answered 0.083 %/s and showed the working (100 / 1200) unaided. Wrote `d->battery_percent -= DRAIN_RATE_PCT_PER_S * dt;` from the altitude line. Predicted correctly and unprompted that an unclamped battery would go negative, at about -25 % after 25 minutes, and later that a flat battery would not stop the climb because nothing connects the two
 
 ## deterministic-simulation
 - status: seed
@@ -463,7 +463,7 @@
 - depends-on: none
 - introduced: 2026-09-13
 - last-reviewed: 2026-09-15
-- evidence: 2026-09-15 ran make --version in the session's Git Bash rather than WSL and got command not found; the two-toolsets-one-laptop explanation was given, not derived. Trunk component #7, revisited during the deployment decision — Docker shrinks the gap by making both environments the same machine. 2026-09-14 the gap shrank for real: builds moved to WSL (Ubuntu 24.04), the same operating system the section 8 container runs. 2026-09-15 asked unprompted what Git Bash actually is, which earned the sharper split: Git Bash is a Unix-shaped surface over Windows (bash plus a few recompiled tools, no apt, no toolchain), WSL is a real Ubuntu with its own filesystem and gitconfig. Said they have make in both places, which sits oddly against yesterday's "command not found" in Git Bash — unresolved, not chased
+- evidence: 2026-09-15 ran make --version in the session's Git Bash rather than WSL and got command not found; the two-toolsets-one-laptop explanation was given, not derived. Trunk component #7, revisited during the deployment decision — Docker shrinks the gap by making both environments the same machine. 2026-09-14 the gap shrank for real: builds moved to WSL (Ubuntu 24.04), the same operating system the section 8 container runs. 2026-09-15 asked unprompted what Git Bash actually is, which earned the sharper split: Git Bash is a Unix-shaped surface over Windows (bash plus a few recompiled tools, no apt, no toolchain), WSL is a real Ubuntu with its own filesystem and gitconfig. Said they have make in both places, which sits oddly against yesterday's "command not found" in Git Bash — unresolved, not chased. Later the same day VS Code IntelliSense reported "#include errors detected" on <unistd.h> while make succeeded — editor on Windows, compiler in WSL, looking at two different operating systems. Checking settled the earlier open question: neither gcc nor make exists on the Windows side, so the whole toolchain is WSL-only. The "which program is complaining?" habit was named; the code . fix via the WSL extension was offered, not yet confirmed as applied
 
 ## docker
 - status: introduced
@@ -536,11 +536,11 @@
 - evidence: self-reported — uses git frequently; 2026-09-14 wrote and ran the repository's root commit, message authored themselves in the present-tense convention
 
 ## git-staging-area
-- status: introduced
+- status: practicing
 - depends-on: git-repository
 - introduced: 2026-09-14
-- last-reviewed: 2026-09-14
-- evidence: correctly predicted that `git status` would list two untracked items rather than five, because git collapses an untracked directory into a single entry
+- last-reviewed: 2026-09-15
+- evidence: correctly predicted that `git status` would list two untracked items rather than five, because git collapses an untracked directory into a single entry. 2026-09-15 ran `git commit --amend --no-edit` after deleting a line but before staging it, and the commit came back unchanged. Saw that amend commits the index like any other commit, that the hash changed anyway on committer timestamp alone, and fixed it with git add -A first. Desk / envelope / posted was offered as the model
 
 ## gitignore
 - status: practicing
@@ -617,7 +617,7 @@
 - depends-on: preprocessor
 - introduced: 2026-09-15
 - last-reviewed: 2026-09-15
-- evidence: CLIMB_RATE_MPS entered as a #define rather than a DroneState field, on the reasoning that a climb rate is a property of how this drone flies, not of where it is right now. Used correctly in the tick body; the preprocessor-substitution link was given, not derived. defined TICK_S themselves and used it at the call site rather than a bare 0.05, after the magic-number argument. Wrote it as `#define TICK_S = 0.05` — an assignment, not a substitution — and fixed it once the expansion `tick(&drone, = 0.05);` was spelled out
+- evidence: CLIMB_RATE_MPS entered as a #define rather than a DroneState field, on the reasoning that a climb rate is a property of how this drone flies, not of where it is right now. Used correctly in the tick body; the preprocessor-substitution link was given, not derived. defined TICK_S themselves and used it at the call site rather than a bare 0.05, after the magic-number argument. Wrote it as `#define TICK_S = 0.05` — an assignment, not a substitution — and fixed it once the expansion `tick(&drone, = 0.05);` was spelled out. wrote DRAIN_RATE_PCT_PER_S as the expression (100.0 / 1200.0) so the model stays readable, after the parenthesis rule was given (a macro body is text and can be torn apart by what surrounds it). Took three passes: an empty `#define BATTERY`, then a DARIN typo, then correct. Also renamed TICK_S to TICK_PER_S without moving its two call sites, and reverted it
 
 ## functions-over-main
 - status: introduced
@@ -653,3 +653,38 @@
 - introduced: 2026-09-15
 - last-reviewed: 2026-09-15
 - evidence: hit it for real on usleep. Learned that pre-1999 C allowed calling an undeclared function and assumed an int return — the same family of silent-wrong-guess problem as the earlier %d-on-a-double break — and that -Werror is what turns it from a scrollable warning into a stop
+
+## git-amend
+- status: introduced
+- depends-on: git-commit, git-staging-area
+- introduced: 2026-09-15
+- last-reviewed: 2026-09-15
+- evidence: amended three times in one sitting — message rewrite, trailer removal, then a content fix. Saw that amend does not edit a commit but builds a new one, so the hash changes every time, and that this is safe here only because nothing is pushed. The "amend freely before a push, think hard after" rule was given, not derived
+
+## conditionals
+- status: practicing
+- depends-on: main-loop
+- introduced: 2026-09-15
+- last-reviewed: 2026-09-15
+- evidence: first if statement in the project. Wrote the shape unaided — condition, comparison operator, braces, assignment inside — needing only the correction from a bare `battery` to `d->battery_percent`. Met the comparison operators and the `==` vs `=` trap (assignment inside a condition is legal C, which is part of why -Wall is on); the trap was explained, not encountered
+
+## clamping
+- status: practicing
+- depends-on: conditionals, battery-model
+- introduced: 2026-09-15
+- last-reviewed: 2026-09-15
+- evidence: watched the battery reach -29 % and identified correctly that the arithmetic was fine and the model was not. Wrote the lower-bound clamp. The general idea — subtraction knows nothing about physical limits, so they have to be stated — was given. Upper bound (battery cannot exceed 100) is not yet guarded; nothing adds charge yet, so it comes due if a charging or regeneration model ever appears
+
+## units-in-names
+- status: introduced
+- depends-on: floating-point-numbers
+- introduced: 2026-09-15
+- last-reviewed: 2026-09-15
+- evidence: a real gap surfaced. Read TICK_S (0.05) as ticks per second rather than seconds per tick, and pushed back on the correction. Landed via dimensional analysis on their own code — metres = (metres/second) x dt means dt must be seconds — plus the observation that usleep takes a duration. The rule given: "per" means divided by, so a name with no division in it should carry no "per". Same family as the day-one speed_ms / speed_mps catch, which was also missed first time
+
+## accelerating-a-slow-phenomenon
+- status: introduced
+- depends-on: battery-model
+- introduced: 2026-09-15
+- last-reviewed: 2026-09-15
+- evidence: a 20-minute bug cannot be watched, so the drain constant was temporarily set to (100.0 / 5) to make it appear in seconds. Technique was dictated, not derived; the learner applied it, saw -29 %, and restored the real rate afterwards. Previews section 4, where a test asserts the same edge case instantly and permanently
