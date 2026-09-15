@@ -12,7 +12,7 @@
 
 ## Sections
 
-### 1. A drone that exists  [ ] not started
+### 1. A drone that exists  [x] complete
 **Deliverable:** `make` builds the project, and running it prints one line of drone state to the terminal.
 **Concepts:** git-repository, git-commit, makefile, compiling-c, struct, header-files, printf-format
 **Tasks:**
@@ -20,7 +20,7 @@
 - [x] 1.2 A first C file that compiles and prints, built by hand with gcc
 - [x] 1.3 The drone state struct, living in its own header file
 - [x] 1.4 Print one line of real drone state with formatted output
-- [ ] 1.5 A Makefile, so one command builds the whole thing
+- [x] 1.5 A Makefile, so one command builds the whole thing
 
 ### 2. A drone that moves  [ ] not started
 **Deliverable:** the engine runs continuously — position climbs, battery drops, state lines scroll past in real time.

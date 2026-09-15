@@ -98,8 +98,8 @@
 - status: practicing
 - depends-on: compiled-vs-interpreted
 - introduced: —
-- last-reviewed: 2026-09-14
-- evidence: self-reported — compiles and runs C from the terminal with gcc; 2026-09-14 built src/drone.c in WSL with -Wall -Wextra -std=c11 and ran it. Also met the Linux/Windows difference — Linux marks a file executable with a permission bit, Windows with the .exe suffix — and asked a good unprompted follow-up about when .exe would appear
+- last-reviewed: 2026-09-15
+- evidence: self-reported — compiles and runs C from the terminal with gcc; 2026-09-15 recalled the full gcc line from memory into the Makefile recipe, flags and all bar -Werror, which was restored for them; 2026-09-14 built src/drone.c in WSL with -Wall -Wextra -std=c11 and ran it. Also met the Linux/Windows difference — Linux marks a file executable with a permission bit, Windows with the .exe suffix — and asked a good unprompted follow-up about when .exe would appear
 
 ## compilation-stages
 - status: introduced
@@ -123,18 +123,25 @@
 - evidence: created src/ after the three-folder layout (src/ engine, server/ node, public/ dashboard) was explained in terms of what the Dockerfile will need to say in section 8
 
 ## makefile
-- status: seed
+- status: practicing
 - depends-on: compiling-c
-- introduced: —
-- last-reviewed: —
-- evidence: —
+- introduced: 2026-09-15
+- last-reviewed: 2026-09-15
+- evidence: wrote the first rule themselves after a worked example in another domain. First prerequisite list named only src/drone.c; when asked about the header, reasoned correctly that #include pastes drone.h in regardless — true of gcc, but missing that gcc is never invited if make sees no change. Then predicted the conditional sharply — "make will run the gcc if drone.h was in the src file list" — and confirmed it with touch src/drone.h: 'drone' is up to date, followed by a real rebuild once the header was declared. Asked two good structural questions unprompted: where Makefile comes from (program vs file you author), and how make tracks changes (it does not — it reads filesystem mtimes fresh each run). Left the <file> placeholder and three TODO blocks in on the first cleanup pass
+
+## file-timestamps
+- status: practicing
+- depends-on: makefile
+- introduced: 2026-09-15
+- last-reviewed: 2026-09-15
+- evidence: first read "timestamp" as metadata about build reproducibility and said so plainly; after the correction to last-modified time, read the three real mtimes off ls --time-style=full-iso and saw drone sitting 42 seconds newer than drone.c. Met touch as an instrument for changing mtime without changing content
 
 ## make-targets
-- status: seed
+- status: practicing
 - depends-on: makefile
-- introduced: —
-- last-reviewed: —
-- evidence: —
+- introduced: 2026-09-15
+- last-reviewed: 2026-09-15
+- evidence: asked what was actually wrong with a recipe that both builds and runs, which earned the concrete answers (hostage terminal, a Docker RUN make that never exits, and a target being a noun). The run: drone dependency chain was supplied after a stuck watch, not derived; clean and .PHONY: run clean were written unaided. Predicted correctly that gcc runs exactly once across make clean / make / make run, and why. Then tested the phony-vs-file distinction unprompted — three make runs in a row all fired, two bare makes in a row both said up to date
 
 ## simulation-tick
 - status: introduced
@@ -455,8 +462,8 @@
 - status: introduced
 - depends-on: none
 - introduced: 2026-09-13
-- last-reviewed: 2026-09-14
-- evidence: trunk component #7, revisited during the deployment decision — Docker shrinks the gap by making both environments the same machine. 2026-09-14 the gap shrank for real: builds moved to WSL (Ubuntu 24.04), the same operating system the section 8 container runs
+- last-reviewed: 2026-09-15
+- evidence: 2026-09-15 ran make --version in the session's Git Bash rather than WSL and got command not found; the two-toolsets-one-laptop explanation was given, not derived. Trunk component #7, revisited during the deployment decision — Docker shrinks the gap by making both environments the same machine. 2026-09-14 the gap shrank for real: builds moved to WSL (Ubuntu 24.04), the same operating system the section 8 container runs
 
 ## docker
 - status: introduced
