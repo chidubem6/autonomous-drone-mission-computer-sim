@@ -14,7 +14,7 @@
 - Makefile — known (2026-09-15) — the build recipe: how to turn src/ into the drone executable, plus run and clean → [[makefile]], [[make-targets]]
 - .git/ — generated — git's own storage: every commit and every past version of every file lives here, never edited by hand → [[git-repository]]
 - src/ — known (2026-09-14) — the C engine's source: the drone's onboard computer → [[project-structure]]
-- src/drone.c — known (2026-09-14) — the engine itself; holds one DroneState and renders it as one telemetry line → [[pointers]], [[printf-format]]
+- src/drone.c — known (2026-09-15) — the engine itself: holds one DroneState, advances it one time-slice at a time with tick(), and renders it as one telemetry line → [[pointers]], [[printf-format]], [[simulation-tick]], [[delta-time]], [[named-constants]]
 - src/drone.h — known (2026-09-14) — the shape of the drone's state, shared with every file that needs it → [[struct]], [[include-guards]]
 - drone — generated — the compiled engine, rebuilt from src/ by gcc and never committed → [[compiling-c]]
 

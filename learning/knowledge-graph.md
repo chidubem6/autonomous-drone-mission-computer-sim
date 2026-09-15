@@ -21,15 +21,15 @@
 - status: practicing
 - depends-on: manual-memory-management
 - introduced: —
-- last-reviewed: 2026-09-14
-- evidence: self-reported — currently attempting to implement pointers and reading up on them. 2026-09-14 asked directly about `*` in declarations vs expressions and about `struct Node *next`; was given the address/dereference distinction, the `->` shorthand, and the pass-by-value argument for why section 2's tick function must take a DroneState *. Then wrote print_state(const DroneState *d) themselves — six `d->field` reads and a `print_state(&drone)` call site, all correct first time, no prompting on the `&`
+- last-reviewed: 2026-09-15
+- evidence: self-reported — currently attempting to implement pointers and reading up on them. 2026-09-14 asked directly about `*` in declarations vs expressions and about `struct Node *next`; was given the address/dereference distinction, the `->` shorthand, and the pass-by-value argument for why section 2's tick function must take a DroneState *. Then wrote print_state(const DroneState *d) themselves — six `d->field` reads and a `print_state(&drone)` call site, all correct first time, no prompting on the `&`. 2026-09-15 wrote the tick signature `void tick(DroneState *d, ...)` from the print_state pattern, and every call site as `tick(&drone, 0.05)` — six correct `&` uses, no prompting
 
 ## const-correctness
-- status: introduced
+- status: practicing
 - depends-on: pointers
 - introduced: 2026-09-14
-- last-reviewed: —
-- evidence: used `const DroneState *d` on print_state after the rationale — a compiler-enforced promise not to modify, and the contrast that will make section 2's un-const `update(DroneState *)` legible. Applied as given, not yet independently reasoned about
+- last-reviewed: 2026-09-15
+- evidence: used `const DroneState *d` on print_state after the rationale — a compiler-enforced promise not to modify, and the contrast that will make section 2's un-const `update(DroneState *)` legible. Applied as given, not yet independently reasoned about. 2026-09-15 reasoned it out independently before being told: asked for the tick signature, dropped the const and said why — "dronestate isnt const because we are chaning it". The contrast the section-1 lesson predicted would land, landed
 
 ## struct
 - status: practicing
@@ -88,11 +88,11 @@
 - evidence: self-reported — built a CLI number toolkit in C; 2026-09-14 wrote drone.c unaided but omitted the trailing newline the spec asked for, then added it after reasoning about why it matters downstream. Later met the variadic-function consequence: printf has no type information for its arguments, because the types are decided by a runtime string, so a wrong specifier cannot be converted or caught by the language itself. Task 1.4 went deep on formatting: used `%%` for a literal percent unprompted, predicted correctly that growing values would shift the columns, then worked through field widths over several passes — that a width is a MINIMUM and printf never truncates, that numbers right-align and text left-aligns, and that literal text between conversions is not counted in any field width. Asked good questions at each step rather than accepting the rule
 
 ## floating-point-numbers
-- status: introduced
+- status: practicing
 - depends-on: none
 - introduced: 2026-09-14
-- last-reviewed: 2026-09-14
-- evidence: every DroneState field is a double because the drone moves 0.5 m per tick — integers would round every tick to nothing. Applied but not yet independently reasoned about
+- last-reviewed: 2026-09-15
+- evidence: every DroneState field is a double because the drone moves 0.5 m per tick — integers would round every tick to nothing. Applied but not yet independently reasoned about. 2026-09-15 extended it from struct fields to a function parameter, choosing double for dt with the rounding argument in their own words
 
 ## compiling-c
 - status: practicing
@@ -144,18 +144,18 @@
 - evidence: asked what was actually wrong with a recipe that both builds and runs, which earned the concrete answers (hostage terminal, a Docker RUN make that never exits, and a target being a noun). The run: drone dependency chain was supplied after a stuck watch, not derived; clean and .PHONY: run clean were written unaided. Predicted correctly that gcc runs exactly once across make clean / make / make run, and why. Then tested the phony-vs-file distinction unprompted — three make runs in a row all fired, two bare makes in a row both said up to date
 
 ## simulation-tick
-- status: introduced
+- status: practicing
 - depends-on: none
 - introduced: 2026-09-13
-- last-reviewed: 2026-09-13
-- evidence: explained as freezing time and computing a small slice forward, repeatedly; worked through 10 m/s x 0.05s = 0.5 m per tick
+- last-reviewed: 2026-09-15
+- evidence: explained as freezing time and computing a small slice forward, repeatedly; worked through 10 m/s x 0.05s = 0.5 m per tick. 2026-09-15 turned it into code: wrote `d->altitude_m += CLIMB_RATE_MPS * dt;` unaided after one hint, then predicted the four output altitudes (0.0, 0.1, 0.2, 0.3) exactly before the build ran
 
 ## delta-time
-- status: introduced
+- status: practicing
 - depends-on: simulation-tick
 - introduced: 2026-09-13
-- last-reviewed: 2026-09-13
-- evidence: predicted correctly that a 300 ms tick causes the dashboard to lag and position to jump; extended to "the drone being in the wrong place is the bug, the lag is the symptom"
+- last-reviewed: 2026-09-15
+- evidence: predicted correctly that a 300 ms tick causes the dashboard to lag and position to jump; extended to "the drone being in the wrong place is the bug, the lag is the symptom". 2026-09-15 met dt as a parameter. Reasoned unprompted that it must be a double — "its a fraction of a unit and we want specifity, like we dont want to round up or down". On a deliberate `+=` to `=` break, predicted 0.1/0.1/0.1 and gave the mechanism in one sentence: "it overwrites instead of adding" — though miscounted the printed lines as three, forgetting the pre-tick print
 
 ## fixed-timestep
 - status: seed
@@ -463,7 +463,7 @@
 - depends-on: none
 - introduced: 2026-09-13
 - last-reviewed: 2026-09-15
-- evidence: 2026-09-15 ran make --version in the session's Git Bash rather than WSL and got command not found; the two-toolsets-one-laptop explanation was given, not derived. Trunk component #7, revisited during the deployment decision — Docker shrinks the gap by making both environments the same machine. 2026-09-14 the gap shrank for real: builds moved to WSL (Ubuntu 24.04), the same operating system the section 8 container runs
+- evidence: 2026-09-15 ran make --version in the session's Git Bash rather than WSL and got command not found; the two-toolsets-one-laptop explanation was given, not derived. Trunk component #7, revisited during the deployment decision — Docker shrinks the gap by making both environments the same machine. 2026-09-14 the gap shrank for real: builds moved to WSL (Ubuntu 24.04), the same operating system the section 8 container runs. 2026-09-15 asked unprompted what Git Bash actually is, which earned the sharper split: Git Bash is a Unix-shaped surface over Windows (bash plus a few recompiled tools, no apt, no toolchain), WSL is a real Ubuntu with its own filesystem and gitconfig. Said they have make in both places, which sits oddly against yesterday's "command not found" in Git Bash — unresolved, not chased
 
 ## docker
 - status: introduced
@@ -611,3 +611,17 @@
 - introduced: 2026-09-13
 - last-reviewed: 2026-09-13
 - evidence: the reason React was left out of the MVP — a build toolchain would be the one mystery box in a project whose premise is that there are none
+
+## named-constants
+- status: introduced
+- depends-on: preprocessor
+- introduced: 2026-09-15
+- last-reviewed: 2026-09-15
+- evidence: CLIMB_RATE_MPS entered as a #define rather than a DroneState field, on the reasoning that a climb rate is a property of how this drone flies, not of where it is right now. Used correctly in the tick body; the preprocessor-substitution link was given, not derived
+
+## functions-over-main
+- status: introduced
+- depends-on: none
+- introduced: 2026-09-15
+- last-reviewed: 2026-09-15
+- evidence: asked unprompted why code gets moved out of main, which earned the hard reason — section 4's test program has its own main and can call tick() but can never reach lines buried inside another main, so code in main is untestable forever. Answer received, not yet applied under their own steam
