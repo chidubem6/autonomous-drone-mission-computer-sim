@@ -56,8 +56,8 @@
 - status: practicing
 - depends-on: preprocessor
 - introduced: 2026-09-14
-- last-reviewed: 2026-09-14
-- evidence: predicted the section 3 double-inclusion problem before being told — nav.h includes drone.h, drone.c includes both, so the struct arrives twice — then wrote the #ifndef/#define/#endif guard, closing #endif with a naming comment
+- last-reviewed: 2026-09-15
+- evidence: predicted the section 3 double-inclusion problem before being told — nav.h includes drone.h, drone.c includes both, so the struct arrives twice — then wrote the #ifndef/#define/#endif guard, closing #endif with a naming comment. 2026-09-15 identified the mechanism unaided when <unistd.h> appeared to declare nothing — named the #ifndef/#define machinery from drone.h as the reason a line inside a header can vanish, before being told. Generalised from include guards to conditional compilation
 
 ## undefined-behaviour
 - status: introduced
@@ -112,8 +112,8 @@
 - status: practicing
 - depends-on: compiling-c
 - introduced: 2026-09-14
-- last-reviewed: 2026-09-14
-- evidence: watched -Wformat fire on a deliberate %d/double mismatch and saw the program still build and print nonsense, then adopted -Werror so a warning cannot be scrolled past. Also saw the limit of the tool: a stray `!` inside a format string passed every flag, because the compiler checks well-formedness, never intent
+- last-reviewed: 2026-09-15
+- evidence: watched -Wformat fire on a deliberate %d/double mismatch and saw the program still build and print nonsense, then adopted -Werror so a warning cannot be scrolled past. Also saw the limit of the tool: a stray `!` inside a format string passed every flag, because the compiler checks well-formedness, never intent. 2026-09-15 hit `implicit declaration of function usleep` under -Werror and read the error without alarm. The cause chain (-std=c11 sets __STRICT_ANSI__, glibc hides non-ISO declarations, the preprocessor deletes the line, the compiler then meets an unknown name) was explained across three passes at their request; the fix -std=c11 -> -std=gnu11 was dictated, not derived
 
 ## project-structure
 - status: introduced
@@ -158,11 +158,11 @@
 - evidence: predicted correctly that a 300 ms tick causes the dashboard to lag and position to jump; extended to "the drone being in the wrong place is the bug, the lag is the symptom". 2026-09-15 met dt as a parameter. Reasoned unprompted that it must be a double — "its a fraction of a unit and we want specifity, like we dont want to round up or down". On a deliberate `+=` to `=` break, predicted 0.1/0.1/0.1 and gave the mechanism in one sentence: "it overwrites instead of adding" — though miscounted the printed lines as three, forgetting the pre-tick print
 
 ## fixed-timestep
-- status: seed
+- status: introduced
 - depends-on: delta-time
-- introduced: —
-- last-reviewed: —
-- evidence: —
+- introduced: 2026-09-15
+- last-reviewed: 2026-09-15
+- evidence: answered the section-4 question correctly — fixed is what makes an exact-value test possible, because an asserted dt gives byte-identical runs while a measured one gives 9.97 or 10.04 depending on CPU load. Then asked for variable timestep to be explained, and got it: games need it to decouple world speed from frame rate, its costs are irreproducibility, spike-teleporting (bullet tunnelling) and integration instability, and real engines use a fixed-step accumulator with variable rendering. Also met the drift this project accepts: a pass costs 50 ms plus the cost of tick and print
 
 ## main-loop
 - status: practicing
@@ -172,11 +172,11 @@
 - evidence: wrote the loop body unaided — `while(1) { tick(&drone, TICK_S); print_state(&drone); }` — replacing six hand-written lines. First reached for `while(true)` out of habit from other languages and swapped it for `while(1)` on the hint, before compiling, so never met the undeclared-identifier error itself; the <stdbool.h> explanation was given afterwards. Met Ctrl+C as the brake for a runaway program
 
 ## sleep-and-timing
-- status: seed
+- status: practicing
 - depends-on: main-loop
-- introduced: —
-- last-reviewed: —
-- evidence: —
+- introduced: 2026-09-15
+- last-reviewed: 2026-09-15
+- evidence: wrote `usleep(TICK_S * 1000000);` — got the seconds-to-microseconds conversion after one hint about the direction, and expressed it from TICK_S rather than a literal so the two cannot drift. Needed the semicolon pointed out. Met the framing that C has no way to wait: sleeping is an OS service, which is why it lives in <unistd.h> and not the C standard library
 
 ## battery-model
 - status: seed
@@ -197,7 +197,7 @@
 - depends-on: simulation-tick
 - introduced: 2026-09-13
 - last-reviewed: 2026-09-15
-- evidence: correctly said a 5 Hz dashboard reading a 20 Hz engine is not wrong, it just misses in-between states — reached "sampling" unprompted. 2026-09-15 saw the extreme case for real
+- evidence: correctly said a 5 Hz dashboard reading a 20 Hz engine is not wrong, it just misses in-between states — reached "sampling" unprompted. 2026-09-15 saw the extreme case for real. 2026-09-15 asked unprompted whether the 50 ms was modelling telemetry relay rate — close enough to earn the real split: 50 ms is the control-loop rate and the physics step size fused into one number, while telemetry downlink is a separate, slower clock (1-10 Hz). Also met the point that a real flight computer samples reality while this program has to manufacture it
 
 ## vectors-and-distance
 - status: seed
@@ -627,11 +627,11 @@
 - evidence: asked unprompted why code gets moved out of main, which earned the hard reason — section 4's test program has its own main and can call tick() but can never reach lines buried inside another main, so code in main is untestable forever. Answer received, not yet applied under their own steam
 
 ## simulated-time-vs-real-time
-- status: introduced
+- status: practicing
 - depends-on: delta-time, main-loop
 - introduced: 2026-09-15
 - last-reviewed: 2026-09-15
-- evidence: predicted correctly that an unthrottled loop would "print really fast and the altitude will shoot up", then asked unprompted why it reached ~2000 m in a second — the right question. Worked the arithmetic with one correction (first said ~2000 ticks, forgetting each tick adds 0.1 not 1, then got 20,000 unaided). The punchline was delivered, not derived: TICK_S is a claim the code asserts, not a measurement, so 20,000 ticks x 0.05 s = 1000 simulated seconds per real second. Task 2.3 is the fix
+- evidence: predicted correctly that an unthrottled loop would "print really fast and the altitude will shoot up", then asked unprompted why it reached ~2000 m in a second — the right question. Worked the arithmetic with one correction (first said ~2000 ticks, forgetting each tick adds 0.1 not 1, then got 20,000 unaided). The punchline was delivered, not derived: TICK_S is a claim the code asserts, not a measurement, so 20,000 ticks x 0.05 s = 1000 simulated seconds per real second. Task 2.3 is the fix. 2026-09-15 closed the gap with usleep and then verified it independently, unprompted: counted 10 m in 5 s against a 2 m/s climb rate. Asked for the arithmetic to be walked through pass by pass, which landed the cancellation — tick rate controls smoothness, not speed
 
 ## interrupt-signal-ctrl-c
 - status: introduced
@@ -639,3 +639,17 @@
 - introduced: 2026-09-15
 - last-reviewed: 2026-09-15
 - evidence: stopped their first runaway infinite loop with it; named afterwards as an interrupt signal asking a running program to stop. Used, not yet reasoned about
+
+## c-standard-vs-posix
+- status: introduced
+- depends-on: preprocessor, compiling-c
+- introduced: 2026-09-15
+- last-reviewed: 2026-09-15
+- evidence: arrived via a real build failure. Met the two-rulebooks split — ISO C defines the language and knows nothing of clocks or an OS, POSIX defines the Unix system calls — and why -std=c11 is a promise that makes glibc hide every non-ISO declaration. Explanation was requested twice and delivered; the learner supplied the conditional-compilation half of it themselves. Not yet reasoned about independently
+
+## implicit-function-declaration
+- status: introduced
+- depends-on: compiler-warnings
+- introduced: 2026-09-15
+- last-reviewed: 2026-09-15
+- evidence: hit it for real on usleep. Learned that pre-1999 C allowed calling an undeclared function and assumed an int return — the same family of silent-wrong-guess problem as the earlier %d-on-a-double break — and that -Werror is what turns it from a scrollable warning into a stop

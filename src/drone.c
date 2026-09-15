@@ -3,6 +3,7 @@
  */
 #include <stdio.h>
 #include "drone.h"
+#include <unistd.h>
 
 /* How fast the drone climbs while taking off, in metres per second. */
 #define CLIMB_RATE_MPS 2.0
@@ -38,9 +39,9 @@ int main(void) {
     print_state(&drone);
 
     while(1) {
-    tick(&drone, TICK_S);
-    print_state(&drone);
-
+        tick(&drone, TICK_S);
+        print_state(&drone);
+        usleep(TICK_S * 1000000);
     }
 
     return 0;

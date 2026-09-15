@@ -28,7 +28,7 @@
 **Tasks:**
 - [x] 2.1 A tick function: one slice of time moves the drone forward
 - [x] 2.2 The main loop: ticking forever instead of by hand
-- [ ] 2.3 Real time: sleeping between ticks so the sim runs at 20 Hz
+- [x] 2.3 Real time: sleeping between ticks so the sim runs at 20 Hz
 - [ ] 2.4 A battery that drains with use
 - [ ] 2.5 Takeoff, level off, and stop when the battery is flat
 

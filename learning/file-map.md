@@ -11,10 +11,10 @@
 - learning/environment.md — known (2026-09-14) — records that builds happen in WSL (Ubuntu), so every lesson dictates commands in the right dialect
 - .gitignore — known (2026-09-14) — which machine-produced files git must never track → [[gitignore]]
 - .gitattributes — known (2026-09-14) — forces LF line endings repo-wide so the Linux build never meets a carriage return → [[line-endings-lf-crlf]]
-- Makefile — known (2026-09-15) — the build recipe: how to turn src/ into the drone executable, plus run and clean → [[makefile]], [[make-targets]]
+- Makefile — known (2026-09-15) — the build recipe: how to turn src/ into the drone executable, plus run and clean; compiles with -std=gnu11 because the engine calls POSIX usleep → [[makefile]], [[make-targets]], [[c-standard-vs-posix]]
 - .git/ — generated — git's own storage: every commit and every past version of every file lives here, never edited by hand → [[git-repository]]
 - src/ — known (2026-09-14) — the C engine's source: the drone's onboard computer → [[project-structure]]
-- src/drone.c — known (2026-09-15) — the engine itself: holds one DroneState, advances it one time-slice at a time with tick(), loops forever in main(), and renders each state as one telemetry line → [[pointers]], [[printf-format]], [[simulation-tick]], [[delta-time]], [[named-constants]], [[main-loop]]
+- src/drone.c — known (2026-09-15) — the engine itself: holds one DroneState, advances it one time-slice at a time with tick(), loops forever in main() at 20 Hz, and renders each state as one telemetry line → [[pointers]], [[printf-format]], [[simulation-tick]], [[delta-time]], [[named-constants]], [[main-loop]], [[sleep-and-timing]], [[fixed-timestep]]
 - src/drone.h — known (2026-09-14) — the shape of the drone's state, shared with every file that needs it → [[struct]], [[include-guards]]
 - drone — generated — the compiled engine, rebuilt from src/ by gcc and never committed → [[compiling-c]]
 
