@@ -7,6 +7,8 @@
 /* How fast the drone climbs while taking off, in metres per second. */
 #define CLIMB_RATE_MPS 2.0
 
+#define TICK_S 0.05
+
 /* Print one line describing everything the drone knows about itself. */
 void print_state(const DroneState *d) {
     printf("POS %6.1f,%6.1f   ALT %5.1f m   HDG %5.1f deg   SPD %6.1f m/s   BAT %5.1f %%\n", 
@@ -34,13 +36,12 @@ int main(void) {
     printf("DRONE-01 online\n");
 
     print_state(&drone);
-    
-    tick(&drone, 0.05);
+
+    while(1) {
+    tick(&drone, TICK_S);
     print_state(&drone);
-    tick(&drone, 0.05);
-    print_state(&drone);
-    tick(&drone, 0.05);
-    print_state(&drone);
+
+    }
 
     return 0;
 }

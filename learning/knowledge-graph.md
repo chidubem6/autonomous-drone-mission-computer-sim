@@ -46,11 +46,11 @@
 - evidence: wrote src/drone.h and included it from drone.c with quotes rather than angle brackets, after the "next to this file" vs "system directories" distinction
 
 ## preprocessor
-- status: introduced
+- status: practicing
 - depends-on: compilation-stages
 - introduced: 2026-09-14
-- last-reviewed: 2026-09-14
-- evidence: worked with #include as literal text substitution rather than an import system — the basis for reasoning about double inclusion
+- last-reviewed: 2026-09-15
+- evidence: worked with #include as literal text substitution rather than an import system — the basis for reasoning about double inclusion. 2026-09-15 restated the mechanism in their own words unprompted — "takes the name and pastes whatever follows it... like stdio.h is text sub where it sees this include and just replaces it with the actual file" — then met the signature trap: the mistake sits in the #define, the error arrives at the call site, because the #define line no longer exists by the time the compiler proper runs
 
 ## include-guards
 - status: practicing
@@ -165,11 +165,11 @@
 - evidence: —
 
 ## main-loop
-- status: seed
+- status: practicing
 - depends-on: simulation-tick
-- introduced: —
-- last-reviewed: —
-- evidence: —
+- introduced: 2026-09-15
+- last-reviewed: 2026-09-15
+- evidence: wrote the loop body unaided — `while(1) { tick(&drone, TICK_S); print_state(&drone); }` — replacing six hand-written lines. First reached for `while(true)` out of habit from other languages and swapped it for `while(1)` on the hint, before compiling, so never met the undeclared-identifier error itself; the <stdbool.h> explanation was given afterwards. Met Ctrl+C as the brake for a runaway program
 
 ## sleep-and-timing
 - status: seed
@@ -196,8 +196,8 @@
 - status: introduced
 - depends-on: simulation-tick
 - introduced: 2026-09-13
-- last-reviewed: 2026-09-13
-- evidence: correctly said a 5 Hz dashboard reading a 20 Hz engine is not wrong, it just misses in-between states — reached "sampling" unprompted
+- last-reviewed: 2026-09-15
+- evidence: correctly said a 5 Hz dashboard reading a 20 Hz engine is not wrong, it just misses in-between states — reached "sampling" unprompted. 2026-09-15 saw the extreme case for real
 
 ## vectors-and-distance
 - status: seed
@@ -613,11 +613,11 @@
 - evidence: the reason React was left out of the MVP — a build toolchain would be the one mystery box in a project whose premise is that there are none
 
 ## named-constants
-- status: introduced
+- status: practicing
 - depends-on: preprocessor
 - introduced: 2026-09-15
 - last-reviewed: 2026-09-15
-- evidence: CLIMB_RATE_MPS entered as a #define rather than a DroneState field, on the reasoning that a climb rate is a property of how this drone flies, not of where it is right now. Used correctly in the tick body; the preprocessor-substitution link was given, not derived
+- evidence: CLIMB_RATE_MPS entered as a #define rather than a DroneState field, on the reasoning that a climb rate is a property of how this drone flies, not of where it is right now. Used correctly in the tick body; the preprocessor-substitution link was given, not derived. defined TICK_S themselves and used it at the call site rather than a bare 0.05, after the magic-number argument. Wrote it as `#define TICK_S = 0.05` — an assignment, not a substitution — and fixed it once the expansion `tick(&drone, = 0.05);` was spelled out
 
 ## functions-over-main
 - status: introduced
@@ -625,3 +625,17 @@
 - introduced: 2026-09-15
 - last-reviewed: 2026-09-15
 - evidence: asked unprompted why code gets moved out of main, which earned the hard reason — section 4's test program has its own main and can call tick() but can never reach lines buried inside another main, so code in main is untestable forever. Answer received, not yet applied under their own steam
+
+## simulated-time-vs-real-time
+- status: introduced
+- depends-on: delta-time, main-loop
+- introduced: 2026-09-15
+- last-reviewed: 2026-09-15
+- evidence: predicted correctly that an unthrottled loop would "print really fast and the altitude will shoot up", then asked unprompted why it reached ~2000 m in a second — the right question. Worked the arithmetic with one correction (first said ~2000 ticks, forgetting each tick adds 0.1 not 1, then got 20,000 unaided). The punchline was delivered, not derived: TICK_S is a claim the code asserts, not a measurement, so 20,000 ticks x 0.05 s = 1000 simulated seconds per real second. Task 2.3 is the fix
+
+## interrupt-signal-ctrl-c
+- status: introduced
+- depends-on: main-loop
+- introduced: 2026-09-15
+- last-reviewed: 2026-09-15
+- evidence: stopped their first runaway infinite loop with it; named afterwards as an interrupt signal asking a running program to stop. Used, not yet reasoned about
