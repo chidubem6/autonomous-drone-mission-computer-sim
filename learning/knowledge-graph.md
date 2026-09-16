@@ -21,8 +21,8 @@
 - status: practicing
 - depends-on: manual-memory-management
 - introduced: —
-- last-reviewed: 2026-09-15
-- evidence: self-reported — currently attempting to implement pointers and reading up on them. 2026-09-14 asked directly about `*` in declarations vs expressions and about `struct Node *next`; was given the address/dereference distinction, the `->` shorthand, and the pass-by-value argument for why section 2's tick function must take a DroneState *. Then wrote print_state(const DroneState *d) themselves — six `d->field` reads and a `print_state(&drone)` call site, all correct first time, no prompting on the `&`. 2026-09-15 wrote the tick signature `void tick(DroneState *d, ...)` from the print_state pattern, and every call site as `tick(&drone, 0.05)` — six correct `&` uses, no prompting. 2026-09-15 wrote the clamp as `if (battery < 0)` — a bare name with nothing in scope — and corrected to `d->battery_percent` once reminded that only d and dt exist inside tick(). Struct fields are not loose variables; the pointer is the only route in
+- last-reviewed: 2026-09-16
+- evidence: self-reported — currently attempting to implement pointers and reading up on them. 2026-09-14 asked directly about `*` in declarations vs expressions and about `struct Node *next`; was given the address/dereference distinction, the `->` shorthand, and the pass-by-value argument for why section 2's tick function must take a DroneState *. Then wrote print_state(const DroneState *d) themselves — six `d->field` reads and a `print_state(&drone)` call site, all correct first time, no prompting on the `&`. 2026-09-15 wrote the tick signature `void tick(DroneState *d, ...)` from the print_state pattern, and every call site as `tick(&drone, 0.05)` — six correct `&` uses, no prompting. 2026-09-15 wrote the clamp as `if (battery < 0)` — a bare name with nothing in scope — and corrected to `d->battery_percent` once reminded that only d and dt exist inside tick(). Struct fields are not loose variables; the pointer is the only route in. 2026-09-16 wrote `D->altitude_m` with a capital D; C is case-sensitive and there is no such name
 
 ## const-correctness
 - status: practicing
@@ -231,8 +231,8 @@
 - status: seed
 - depends-on: enums
 - introduced: —
-- last-reviewed: —
-- evidence: —
+- last-reviewed: 2026-09-16
+- evidence: motivation earned the hard way on 2026-09-16, before the concept was taught. Two separate bugs in section 2.5 came from the same cause — the drone's situation was inferred from number combinations rather than stored — and the learner diagnosed both by tracing the chain by hand. Comes due in section 3
 
 ## test-is-a-claim
 - status: introduced
@@ -665,15 +665,15 @@
 - status: practicing
 - depends-on: main-loop
 - introduced: 2026-09-15
-- last-reviewed: 2026-09-15
-- evidence: first if statement in the project. Wrote the shape unaided — condition, comparison operator, braces, assignment inside — needing only the correction from a bare `battery` to `d->battery_percent`. Met the comparison operators and the `==` vs `=` trap (assignment inside a condition is legal C, which is part of why -Wall is on); the trap was explained, not encountered
+- last-reviewed: 2026-09-16
+- evidence: first if statement in the project. Wrote the shape unaided — condition, comparison operator, braces, assignment inside — needing only the correction from a bare `battery` to `d->battery_percent`. Met the comparison operators and the `==` vs `=` trap (assignment inside a condition is legal C, which is part of why -Wall is on); the trap was explained, not encountered. 2026-09-16 built a three-branch if / else if / else chain. Answered the ordering question before writing any code — a climb check placed first would win and the battery branch would be dead. Needed the chain shape scaffolded into the file after writing two separate ifs, then filled every condition and body themselves. Met the bare-truthiness trap: `else if (d->altitude_m)` compiles and silently means "altitude is not zero"
 
 ## clamping
 - status: practicing
 - depends-on: conditionals, battery-model
 - introduced: 2026-09-15
-- last-reviewed: 2026-09-15
-- evidence: watched the battery reach -29 % and identified correctly that the arithmetic was fine and the model was not. Wrote the lower-bound clamp. The general idea — subtraction knows nothing about physical limits, so they have to be stated — was given. Upper bound (battery cannot exceed 100) is not yet guarded; nothing adds charge yet, so it comes due if a charging or regeneration model ever appears
+- last-reviewed: 2026-09-16
+- evidence: watched the battery reach -29 % and identified correctly that the arithmetic was fine and the model was not. Wrote the lower-bound clamp. The general idea — subtraction knows nothing about physical limits, so they have to be stated — was given. Upper bound (battery cannot exceed 100) is not yet guarded; nothing adds charge yet, so it comes due if a charging or regeneration model ever appears. 2026-09-16 wrote the ceiling clamp to match their own floor clamp, and moved a misplaced clamp to sit after the move it guards once told what a clamp is for
 
 ## units-in-names
 - status: introduced
@@ -683,8 +683,29 @@
 - evidence: a real gap surfaced. Read TICK_S (0.05) as ticks per second rather than seconds per tick, and pushed back on the correction. Landed via dimensional analysis on their own code — metres = (metres/second) x dt means dt must be seconds — plus the observation that usleep takes a duration. The rule given: "per" means divided by, so a name with no division in it should carry no "per". Same family as the day-one speed_ms / speed_mps catch, which was also missed first time
 
 ## accelerating-a-slow-phenomenon
-- status: introduced
+- status: practicing
 - depends-on: battery-model
 - introduced: 2026-09-15
-- last-reviewed: 2026-09-15
-- evidence: a 20-minute bug cannot be watched, so the drain constant was temporarily set to (100.0 / 5) to make it appear in seconds. Technique was dictated, not derived; the learner applied it, saw -29 %, and restored the real rate afterwards. Previews section 4, where a test asserts the same edge case instantly and permanently
+- last-reviewed: 2026-09-16
+- evidence: a 20-minute bug cannot be watched, so the drain constant was temporarily set to (100.0 / 5) to make it appear in seconds. Technique was dictated, not derived; the learner applied it, saw -29 %, and restored the real rate afterwards. Previews section 4, where a test asserts the same edge case instantly and permanently. 2026-09-16 reached for the technique unprompted on the next task — proposed exaggerated constants for a 27-minute flight without being told to. Needed help working the timeline arithmetic, then ran it and confirmed each phase landed where predicted. Met the failure mode: badly chosen test numbers can make a whole branch never execute, so the run tests less than it appears to
+
+## logical-operators
+- status: understood
+- depends-on: conditionals
+- introduced: 2026-09-16
+- last-reviewed: 2026-09-16
+- evidence: self-reported prior knowledge — demonstrated rather than claimed. Wrote `d->battery_percent <= 0 && d->altitude_m > 0.0` unprompted, ahead of the lesson, and used it correctly to express "flat AND still airborne". Treated as exercise for the rest of the session rather than taught
+
+## implicit-state
+- status: introduced
+- depends-on: conditionals
+- introduced: 2026-09-16
+- last-reviewed: 2026-09-16
+- evidence: found two bugs from one cause, and traced both by hand. First the landing flicker (0.0, 0.1, 0.0, 0.1 forever): the descent branch required flat AND airborne, so a flat-and-landed drone fell through to a climb branch that never asked about power. Correctly identified which branch ran and proposed the guard as the fix. Then the teleport (0.0 to 100.0 in one tick) from an else that assigned rather than held, and answered correctly that a hold branch should be empty. Asked for a review of the whole implementation unprompted, which earned the naming: the situation is never written down, only inferred from two numbers every tick
+
+## comments-that-lie
+- status: introduced
+- depends-on: none
+- introduced: 2026-09-16
+- last-reviewed: 2026-09-16
+- evidence: twice in one sitting — a ceiling clamp labelled "Altitude cannot be less than 0", copy-pasted from its floor twin, and a battery comment still claiming "about 20 minutes (1200s)" over a value changed to (100.0 / 10) for testing. The rule given: a wrong comment is worse than none, because the reader trusts it over the code. Flagged, not yet independently caught

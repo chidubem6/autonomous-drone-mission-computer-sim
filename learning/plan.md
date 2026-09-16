@@ -22,7 +22,7 @@
 - [x] 1.4 Print one line of real drone state with formatted output
 - [x] 1.5 A Makefile, so one command builds the whole thing
 
-### 2. A drone that moves  [ ] in progress
+### 2. A drone that moves  [x] complete
 **Deliverable:** the engine runs continuously — position climbs, battery drops, state lines scroll past in real time.
 **Concepts:** simulation-tick, delta-time, fixed-timestep, main-loop, sleep-and-timing, battery-model
 **Tasks:**
@@ -30,7 +30,7 @@
 - [x] 2.2 The main loop: ticking forever instead of by hand
 - [x] 2.3 Real time: sleeping between ticks so the sim runs at 20 Hz
 - [x] 2.4 A battery that drains with use
-- [ ] 2.5 Takeoff, level off, and stop when the battery is flat
+- [x] 2.5 Takeoff, level off, and stop when the battery is flat
 
 ### 3. A drone that flies a mission  [ ] not started
 **Deliverable:** given three waypoints, it steers to each in turn, reports arrival, and finishes with COMPLETE.

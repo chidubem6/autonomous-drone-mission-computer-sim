@@ -15,6 +15,12 @@
    lasts about 20 minutes (1200s). */
 #define DRAIN_RATE_PCT_PER_S (100.0 / 1200)
 
+/* Descent rate once the battery is flat, in metres per second. */
+#define DESCENT_RATE_MPS 1
+
+/* The altitude the drone climbs to and then holds, in metres. */
+#define CRUISE_ALTITUDE_M 100
+
 /* Print one line describing everything the drone knows about itself. */
 void print_state(const DroneState *d) {
     printf("POS %6.1f,%6.1f   ALT %5.1f m   HDG %5.1f deg   SPD %6.1f m/s   BAT %5.1f %%\n", 
@@ -26,17 +32,33 @@ void print_state(const DroneState *d) {
  * so edit the state into how it will be at the end of that slice.
  */
 void tick(DroneState *d, double dt) {
-
-    d->altitude_m += CLIMB_RATE_MPS * dt;
-
-    /* TODO(you): drain this tick's share of the battery. Same shape as the
-        line above, pointing the other way. */
+    
     d->battery_percent -= DRAIN_RATE_PCT_PER_S * dt;
 
-    /* TODO(you): a battery cannot hold less than nothing. If it has gone
-       below empty, put it back to empty. */
-    if (d->battery_percent < 0) {
+    if (d->battery_percent <= 0.0) {
         d->battery_percent = 0.0;
+    }
+
+    /* If battery is flat but still in the air */
+    if (d->battery_percent <= 0.0 && d->altitude_m > 0.0) {
+        d->altitude_m -= DESCENT_RATE_MPS * dt;
+
+        /* Altitude cannot be less than 0 */
+        if (d->altitude_m <= 0) {
+            d->altitude_m = 0.0;
+        }
+
+    /* Climb at the climb rate, then clamp so one tick cannot
+        carry it past the cruise altitude. */
+    } else if (d->battery_percent > 0.0 && d->altitude_m < CRUISE_ALTITUDE_M) {
+        d->altitude_m += CLIMB_RATE_MPS * dt;
+
+        /* Altitude should not be aboce cruise altitude. */
+        if (d->altitude_m >  CRUISE_ALTITUDE_M) {
+            d->altitude_m = CRUISE_ALTITUDE_M;
+        }
+    } else {
+        /*Altitude does not change when landed */
     }
 }
 
