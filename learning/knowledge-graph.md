@@ -207,11 +207,11 @@
 - evidence: task 3.2. Given dx as the pattern, wrote dy and `return sqrt(dx*dx + dy*dy)` themselves. En route wrote `dy = w->y_m - d->x_m` — a copy-paste slip that is type-correct and meaning-wrong, invisible to the compiler; fixed after being asked to read the two lines side by side. Result checked against hand arithmetic (10,40 from origin -> 41.2 m) by the agent, not by them. Asked afterwards why the printed distance never changes, answered "because the current wp is stuck at 0" — right about the waypoint end, but missed that nothing in tick() has ever modified x_m or y_m, so the drone end is frozen too
 
 ## heading-and-direction
-- status: seed
+- status: practicing
 - depends-on: vectors-and-distance
-- introduced: —
-- last-reviewed: —
-- evidence: —
+- introduced: 2026-09-16
+- last-reviewed: 2026-09-16
+- evidence: task 3.3. Wrote the negative-angle fold themselves (`if (degrees < 0) degrees += 360;`) and the return, after the -90-is-also-270 framing; the degrees conversion line itself was given as a hint after a long stall. Predicted the heading to WP0 (10 east, 40 north) as "around 90 degrees, top right quadrant" — quadrant right, scale wrong; when asked which axis dominates, corrected unprompted to "below 45". Real answer 14.0 deg. Also extended the telemetry printf to a five-argument line with a second function call in it, unaided
 
 ## waypoint-list
 - status: practicing
@@ -751,3 +751,31 @@
 - introduced: 2026-09-16
 - last-reviewed: 2026-09-16
 - evidence: task 3.2. Wrote `distance_to(&drone, &mission[current_wp])` correctly first time after one explanation of the shape — index into the array to get a Waypoint value, then & to take its address. Connects the array work from 3.1 to the pointer work from section 2; no prompting needed on either &
+
+## radians-vs-degrees
+- status: introduced
+- depends-on: floating-point-numbers
+- introduced: 2026-09-16
+- last-reviewed: 2026-09-16
+- evidence: task 3.3. Given the unit contrast (a full turn is 2*pi radians rather than 360 degrees, and C's trig functions speak only radians) and then the conversion line itself, `radians * (180.0 / M_PI)`, after a fifteen-minute stall on that blank. Applied as given, not derived — comes due again anywhere a turn rate or an angle difference is computed
+
+## atan2-and-quadrants
+- status: introduced
+- depends-on: heading-and-direction
+- introduced: 2026-09-16
+- last-reviewed: 2026-09-16
+- evidence: task 3.3, explained but not yet demonstrated. Why atan(dy/dx) fails twice — division by zero when dx is 0, and a ratio that cannot tell (1,1) from (-1,-1) — and why atan2 taking the legs separately keeps all four quadrants. The compass trick was given rather than derived: atan2(a,b) measures from the b axis toward the a axis, so atan2(east, north) is clockwise-from-north by construction. The argument order IS the conversion
+
+## angle-normalisation
+- status: practicing
+- depends-on: heading-and-direction
+- introduced: 2026-09-16
+- last-reviewed: 2026-09-16
+- evidence: task 3.3. Given only the observation that atan2 returns -180..+180 and that a compass says 270 where atan2 says -90, wrote the fix themselves: an if on `degrees < 0` adding 360. The underlying idea — that two numbers 360 apart name the same direction, so a range is a choice of representative — was not stated back in their own words
+
+## integer-division
+- status: introduced
+- depends-on: floating-point-numbers
+- introduced: 2026-09-16
+- last-reviewed: 2026-09-16
+- evidence: task 3.3, flagged as a near-miss rather than earned. Wrote `180 / M_PI`, which is safe only because M_PI is a double and promotes the 180; pointed out that `180 / 200` between two ints would be 0, not 0.9, and that writing the .0 explicitly is the habit worth having. Not yet hit as a real bug

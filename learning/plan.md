@@ -38,7 +38,7 @@
 **Tasks:**
 - [x] 3.1 A Waypoint struct and the mission: an array of three of them, printed at startup
 - [x] 3.2 How far to go: straight-line distance from the drone to the current waypoint
-- [ ] 3.3 Which way to go: the direction to the waypoint, and the heading in degrees
+- [x] 3.3 Which way to go: the direction to the waypoint, and the heading in degrees
 - [ ] 3.4 Flying it: move along that direction every tick at cruise speed
 - [ ] 3.5 Arrival: a "close enough" threshold, advancing to the next waypoint, announcing each one
 - [ ] 3.6 Flight modes: an enum and the state machine that runs TAKEOFF -> NAVIGATE -> COMPLETE

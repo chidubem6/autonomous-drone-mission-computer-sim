@@ -46,6 +46,27 @@ double distance_to(const DroneState *d, const Waypoint *w) {
 }
 
 /*
+ * Compass heading from the drone to a waypoint, in degrees.
+ * 0 = north, 90 = east — the same convention as DroneState.heading_deg.
+ */
+double heading_to(const DroneState *d, const Waypoint *w) {
+    double dx = w->x_m - d->x_m;   /* metres east  */
+    double dy = w->y_m - d->y_m;   /* metres north */
+
+    /* East first, north second: measures clockwise from north. Answer
+       is in radians, somewhere between -pi and +pi. */
+    double radians = atan2(dx, dy);
+
+    double degrees = radians * (180.0 /M_PI);
+
+    if (degrees < 0) {
+        degrees += 360;
+    }
+
+    return degrees;
+}
+
+/*
  * Advance the drone by one tick: dt seconds of simulated time have passed,
  * so edit the state into how it will be at the end of that slice.
  */
@@ -115,7 +136,7 @@ int main(void) {
     while(1) {
         tick(&drone, TICK_S);
         print_state(&drone);
-        printf("   -> WP%d   %6.1f m\n", current_wp, distance_to(&drone, &mission[current_wp]));
+        printf("   -> WP%d   %6.1f m   HDG %5.1f deg\n", current_wp, distance_to(&drone, &mission[current_wp]), heading_to(&drone, &mission[current_wp]));
         usleep(TICK_S * 1000000);
     }
 
