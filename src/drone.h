@@ -14,4 +14,14 @@ typedef struct {
     double battery_percent; /* battery charge remaining, in percent */
 } DroneState;
 
+/*
+ * A single target the drone flies to. Same frame as DroneState:
+ * metres east, north and up, measured from the launch point.
+ */
+typedef struct {
+    double x_m; /* target position east of the launch point, in metres */
+    double y_m; /* target position north of the launch point, in metres */
+    double altitude_m; /* target altitude above the launch point, in metres */
+} Waypoint;
+
 #endif /* DRONE_H */

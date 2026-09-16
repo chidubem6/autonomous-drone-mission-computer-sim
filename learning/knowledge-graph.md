@@ -36,7 +36,7 @@
 - depends-on: none
 - introduced: 2026-09-14
 - last-reviewed: 2026-09-14
-- evidence: wrote the six-field DroneState unaided from a two-field pattern, units carried in the field names, and initialised it with designated initialisers. Caught nothing wrong with `speed_ms` until it was pointed out that `ms` reads as milliseconds; renamed to `speed_mps`
+- evidence: 2026-09-16 wrote the Waypoint struct in drone.h from the DroneState pattern — three double fields with units in the names — but left the type off the third (`altitude_m;` alone), and fixed it after being told that two of the three lines had something the third was missing. Earlier: wrote the six-field DroneState unaided from a two-field pattern, units carried in the field names, and initialised it with designated initialisers. Caught nothing wrong with `speed_ms` until it was pointed out that `ms` reads as milliseconds; renamed to `speed_mps`
 
 ## header-files
 - status: practicing
@@ -63,15 +63,15 @@
 - status: introduced
 - depends-on: compiler-warnings
 - introduced: 2026-09-14
-- last-reviewed: 2026-09-14
-- evidence: deliberate %d-on-a-double break. Predicted compile and run correctly but expected C to silently convert the double to an int; the real output was garbage (6 here, 2102178464 on their run). Asked unprompted why the value varies between machines and runs, which earned the calling-convention answer: doubles travel in floating-point registers, %d reads the integer slot, and finds leftovers
+- last-reviewed: 2026-09-16
+- evidence: 2026-09-16 met it a second way, via array bounds: predicted correctly and unprompted that `i <= COUNT` "would try and read past the list", but guessed the reason was that the access is "still a valid access". Corrected to the real one — it is not valid, it is unchecked; `mission[3]` is arithmetic (base + 3 x sizeof) that succeeds for any index, and C stores no length to compare against, so there is nothing to check WITH. Asked the question honestly rather than guessing silently. 2026-09-14: deliberate %d-on-a-double break. Predicted compile and run correctly but expected C to silently convert the double to an int; the real output was garbage (6 here, 2102178464 on their run). Asked unprompted why the value varies between machines and runs, which earned the calling-convention answer: doubles travel in floating-point registers, %d reads the integer slot, and finds leftovers
 
 ## arrays-of-structs
-- status: seed
+- status: practicing
 - depends-on: struct
-- introduced: —
-- last-reviewed: —
-- evidence: —
+- introduced: 2026-09-16
+- last-reviewed: 2026-09-16
+- evidence: task 3.1. First attempt put the array's own name inside its initializer — `{mission.x_m = 10, ...}` — held to across three corrections, which surfaced the real question they were asking: how do you say WHICH slot a value goes in. Asked unprompted how other languages initialise arrays, and separately why C uses `{ }` rather than `[ ]`; both were answered (position is the index; `[ ]` is already taken by declaration and subscript, and `[0] =` is C's slot designator). Wrote the three-waypoint literal correctly once the prefix was removed. Then wrote the full read side — `mission[i].x_m` and its two siblings inside a four-slot printf — after being shown one of the three arguments
 
 ## enums
 - status: seed
@@ -84,8 +84,8 @@
 - status: practicing
 - depends-on: none
 - introduced: —
-- last-reviewed: 2026-09-14
-- evidence: self-reported — built a CLI number toolkit in C; 2026-09-14 wrote drone.c unaided but omitted the trailing newline the spec asked for, then added it after reasoning about why it matters downstream. Later met the variadic-function consequence: printf has no type information for its arguments, because the types are decided by a runtime string, so a wrong specifier cannot be converted or caught by the language itself. Task 1.4 went deep on formatting: used `%%` for a literal percent unprompted, predicted correctly that growing values would shift the columns, then worked through field widths over several passes — that a width is a MINIMUM and printf never truncates, that numbers right-align and text left-aligns, and that literal text between conversions is not counted in any field width. Asked good questions at each step rather than accepting the rule
+- last-reviewed: 2026-09-16
+- evidence: 2026-09-16 built the mission-announcement line in task 3.1 incrementally — label first, then widths, then arguments — and landed a correct four-slot line (`%d` for the int index, three `%5.1f`/`%4.1f` for doubles) with matched arguments in order. En route left a `%.1f` with no argument behind it, which is the variadic hazard they already knew in theory meeting their own code. Earlier: self-reported — built a CLI number toolkit in C; 2026-09-14 wrote drone.c unaided but omitted the trailing newline the spec asked for, then added it after reasoning about why it matters downstream. Later met the variadic-function consequence: printf has no type information for its arguments, because the types are decided by a runtime string, so a wrong specifier cannot be converted or caught by the language itself. Task 1.4 went deep on formatting: used `%%` for a literal percent unprompted, predicted correctly that growing values would shift the columns, then worked through field widths over several passes — that a width is a MINIMUM and printf never truncates, that numbers right-align and text left-aligns, and that literal text between conversions is not counted in any field width. Asked good questions at each step rather than accepting the rule
 
 ## floating-point-numbers
 - status: practicing
@@ -112,8 +112,8 @@
 - status: practicing
 - depends-on: compiling-c
 - introduced: 2026-09-14
-- last-reviewed: 2026-09-15
-- evidence: watched -Wformat fire on a deliberate %d/double mismatch and saw the program still build and print nonsense, then adopted -Werror so a warning cannot be scrolled past. Also saw the limit of the tool: a stray `!` inside a format string passed every flag, because the compiler checks well-formedness, never intent. 2026-09-15 hit `implicit declaration of function usleep` under -Werror and read the error without alarm. The cause chain (-std=c11 sets __STRICT_ANSI__, glibc hides non-ISO declarations, the preprocessor deletes the line, the compiler then meets an unknown name) was explained across three passes at their request; the fix -std=c11 -> -std=gnu11 was dictated, not derived
+- last-reviewed: 2026-09-16
+- evidence: 2026-09-16 hit two new ones in task 3.1 under -Werror. `variable 'mission' set but not used` after filling the array and never reading it — understood as unfinished rather than broken, and cleared by writing the loop that reads it, not by silencing it. Also created a format/argument mismatch mid-edit (`%.1f` with no value behind it) and was shown the one-slot-one-argument rule before building. Earlier: watched -Wformat fire on a deliberate %d/double mismatch and saw the program still build and print nonsense, then adopted -Werror so a warning cannot be scrolled past. Also saw the limit of the tool: a stray `!` inside a format string passed every flag, because the compiler checks well-formedness, never intent. 2026-09-15 hit `implicit declaration of function usleep` under -Werror and read the error without alarm. The cause chain (-std=c11 sets __STRICT_ANSI__, glibc hides non-ISO declarations, the preprocessor deletes the line, the compiler then meets an unknown name) was explained across three passes at their request; the fix -std=c11 -> -std=gnu11 was dictated, not derived
 
 ## project-structure
 - status: introduced
@@ -214,11 +214,11 @@
 - evidence: —
 
 ## waypoint-list
-- status: seed
+- status: practicing
 - depends-on: arrays-of-structs
-- introduced: —
-- last-reviewed: —
-- evidence: —
+- introduced: 2026-09-16
+- last-reviewed: 2026-09-16
+- evidence: task 3.1. Chose their own three-waypoint route (10,40 / 50,25 / 95,75) and wrote it as a Waypoint array in main(), announced at startup before the flight loop. Picked waypoint altitudes of 200-400 m against a CRUISE_ALTITUDE_M of 100 — flagged for them as something task 3.4 has to reconcile, not yet resolved
 
 ## arrival-threshold
 - status: seed
@@ -708,4 +708,25 @@
 - depends-on: none
 - introduced: 2026-09-16
 - last-reviewed: 2026-09-16
-- evidence: twice in one sitting — a ceiling clamp labelled "Altitude cannot be less than 0", copy-pasted from its floor twin, and a battery comment still claiming "about 20 minutes (1200s)" over a value changed to (100.0 / 10) for testing. The rule given: a wrong comment is worse than none, because the reader trusts it over the code. Flagged, not yet independently caught
+- evidence: 2026-09-16 met it a third time, on their own new code: the three Waypoint field comments were copied from DroneState and still read "position east of the launch point" inside a struct that describes a target, not the vehicle. Rewrote them as "target position ..." once it was pointed out. Still flagged rather than self-caught. Earlier: twice in one sitting — a ceiling clamp labelled "Altitude cannot be less than 0", copy-pasted from its floor twin, and a battery comment still claiming "about 20 minutes (1200s)" over a value changed to (100.0 / 10) for testing. The rule given: a wrong comment is worse than none, because the reader trusts it over the code. Flagged, not yet independently caught
+
+## for-loop
+- status: practicing
+- depends-on: main-loop
+- introduced: 2026-09-16
+- last-reviewed: 2026-09-16
+- evidence: task 3.1. Given the three-part shape (start / keep-going test / step) once, wrote `i < MISSION_WAYPOINT_COUNT` unaided and correctly — the `<` not `<=` boundary landed without prompting. Contrast with the `while(1)` flight loop, which never ends, drawn but not yet quizzed. Separately showed a good debugging instinct: temporarily flipped `while(1)` to `while(0)` so the program would exit and the mission lines could be read without scrolling
+
+## array-decay-to-pointer
+- status: introduced
+- depends-on: pointers
+- introduced: 2026-09-16
+- last-reviewed: 2026-09-16
+- evidence: met through gcc rather than explanation — nine copies of `'(Waypoint *)&mission' is a pointer; did you mean to use '->'?` on their own mistake. Shown that an array's name in an expression collapses to a pointer to its first element, which is why `.` failed there and why `d->field` is right in tick(). Also shown that gcc's suggested fix (`->`) was wrong: the compiler diagnoses the symptom, never the intent
+
+## array-length-is-not-stored
+- status: introduced
+- depends-on: arrays-of-structs
+- introduced: 2026-09-16
+- last-reviewed: 2026-09-16
+- evidence: asked directly and unprompted what "the array can't tell you its own length" means — a good question at the right moment. Given the contrast with Python's len()/Java's .length (a number stored beside the elements, which is what makes IndexError possible), the compile-time-only `sizeof(a)/sizeof(a[0])` escape hatch and why it dies at a function boundary, and why every C API that takes an array also takes an `n`. Connected to MISSION_WAYPOINT_COUNT as their own `n`. Not yet independently applied

@@ -21,6 +21,10 @@
 /* The altitude the drone climbs to and then holds, in metres. */
 #define CRUISE_ALTITUDE_M 100
 
+/* How many waypoints the mission has. An array does not remember its own
+   length, so the count lives here and every loop is checked against it. */
+#define MISSION_WAYPOINT_COUNT 3
+
 /* Print one line describing everything the drone knows about itself. */
 void print_state(const DroneState *d) {
     printf("POS %6.1f,%6.1f   ALT %5.1f m   HDG %5.1f deg   SPD %6.1f m/s   BAT %5.1f %%\n", 
@@ -72,7 +76,22 @@ int main(void) {
         .battery_percent = 100.0
     };
 
+    /* The mission: the targets to fly to, in order. */
+    Waypoint mission[MISSION_WAYPOINT_COUNT] = {
+        {.x_m = 10, .y_m = 40, .altitude_m = 200},
+           {.x_m = 50, .y_m = 25, .altitude_m = 400},
+           {.x_m = 95, .y_m = 75, .altitude_m = 310},
+
+    };
+
     printf("DRONE-01 online\n");
+
+    /* Announce the mission before flying it. */
+    printf("MISSION %d waypoints\n", MISSION_WAYPOINT_COUNT);
+    for (int i = 0; i < MISSION_WAYPOINT_COUNT; i++) {
+        printf("WP%d   x %5.1f   y %5.1f   alt %4.1f\n", i, mission[i].x_m, mission[i].y_m, mission[i].altitude_m);
+
+    }
 
     print_state(&drone);
 
