@@ -102,11 +102,11 @@
 - evidence: self-reported — compiles and runs C from the terminal with gcc; 2026-09-15 recalled the full gcc line from memory into the Makefile recipe, flags and all bar -Werror, which was restored for them; 2026-09-14 built src/drone.c in WSL with -Wall -Wextra -std=c11 and ran it. Also met the Linux/Windows difference — Linux marks a file executable with a permission bit, Windows with the .exe suffix — and asked a good unprompted follow-up about when .exe would appear
 
 ## compilation-stages
-- status: introduced
+- status: practicing
 - depends-on: compiling-c
 - introduced: 2026-09-14
-- last-reviewed: 2026-09-14
-- evidence: predicted a .obj file would be left behind after compiling; corrected to the four stages (preprocess, compile, assemble, link) that gcc runs in one command, deleting the intermediate. Object files reappear deliberately in task 1.5
+- last-reviewed: 2026-09-16
+- evidence: 2026-09-16 the link stage stopped being a name on a list and became an error they had predicted: asked whether `make` would succeed with math.h included and sqrt called, answered "no it wont because sqrt doesnt have a defintion" before running it. Then read the failure themselves and saw it came from /usr/bin/ld, a different program from gcc, after stages 1-3 had all succeeded. Earlier: predicted a .obj file would be left behind after compiling; corrected to the four stages (preprocess, compile, assemble, link) that gcc runs in one command, deleting the intermediate. Object files reappear deliberately in task 1.5
 
 ## compiler-warnings
 - status: practicing
@@ -200,11 +200,11 @@
 - evidence: correctly said a 5 Hz dashboard reading a 20 Hz engine is not wrong, it just misses in-between states — reached "sampling" unprompted. 2026-09-15 saw the extreme case for real. 2026-09-15 asked unprompted whether the 50 ms was modelling telemetry relay rate — close enough to earn the real split: 50 ms is the control-loop rate and the physics step size fused into one number, while telemetry downlink is a separate, slower clock (1-10 Hz). Also met the point that a real flight computer samples reality while this program has to manufacture it
 
 ## vectors-and-distance
-- status: seed
+- status: practicing
 - depends-on: floating-point-numbers
-- introduced: —
-- last-reviewed: —
-- evidence: —
+- introduced: 2026-09-16
+- last-reviewed: 2026-09-16
+- evidence: task 3.2. Given dx as the pattern, wrote dy and `return sqrt(dx*dx + dy*dy)` themselves. En route wrote `dy = w->y_m - d->x_m` — a copy-paste slip that is type-correct and meaning-wrong, invisible to the compiler; fixed after being asked to read the two lines side by side. Result checked against hand arithmetic (10,40 from origin -> 41.2 m) by the agent, not by them. Asked afterwards why the printed distance never changes, answered "because the current wp is stuck at 0" — right about the waypoint end, but missed that nothing in tick() has ever modified x_m or y_m, so the drone end is frozen too
 
 ## heading-and-direction
 - status: seed
@@ -620,7 +620,7 @@
 - evidence: CLIMB_RATE_MPS entered as a #define rather than a DroneState field, on the reasoning that a climb rate is a property of how this drone flies, not of where it is right now. Used correctly in the tick body; the preprocessor-substitution link was given, not derived. defined TICK_S themselves and used it at the call site rather than a bare 0.05, after the magic-number argument. Wrote it as `#define TICK_S = 0.05` — an assignment, not a substitution — and fixed it once the expansion `tick(&drone, = 0.05);` was spelled out. wrote DRAIN_RATE_PCT_PER_S as the expression (100.0 / 1200.0) so the model stays readable, after the parenthesis rule was given (a macro body is text and can be torn apart by what surrounds it). Took three passes: an empty `#define BATTERY`, then a DARIN typo, then correct. Also renamed TICK_S to TICK_PER_S without moving its two call sites, and reverted it
 
 ## functions-over-main
-- status: introduced
+- status: practicing
 - depends-on: none
 - introduced: 2026-09-15
 - last-reviewed: 2026-09-15
@@ -730,3 +730,24 @@
 - introduced: 2026-09-16
 - last-reviewed: 2026-09-16
 - evidence: asked directly and unprompted what "the array can't tell you its own length" means — a good question at the right moment. Given the contrast with Python's len()/Java's .length (a number stored beside the elements, which is what makes IndexError possible), the compile-time-only `sizeof(a)/sizeof(a[0])` escape hatch and why it dies at a function boundary, and why every C API that takes an array also takes an `n`. Connected to MISSION_WAYPOINT_COUNT as their own `n`. Not yet independently applied
+
+## declaration-vs-definition
+- status: practicing
+- depends-on: header-files
+- introduced: 2026-09-16
+- last-reviewed: 2026-09-16
+- evidence: task 3.2, and the strongest prediction of the journey so far. Told only that math.h holds a declaration — "sqrt takes a double and returns a double" — and asked whether make would succeed, answered unprompted: "no it wont because sqr doesnt have a defintion". Honest about the second half too ("im not sure where sqrt would have to come from"), which is what made the linker explanation land on a real gap rather than a hypothetical one
+
+## linking-libraries
+- status: introduced
+- depends-on: declaration-vs-definition
+- introduced: 2026-09-16
+- last-reviewed: 2026-09-16
+- evidence: task 3.2. Hit `undefined reference to sqrt` on their own build and read it as a link-stage failure. Given the rest: that sqrt's compiled code lives in libm, that gcc links libc automatically but not libm, that `-lm` means "link the library named m", and that it must come after the source file because ld resolves left to right and discards a library it has no outstanding references for. The fix and the ordering rule were both dictated, not derived — comes due again the first time a third-party library appears (section 6, npm)
+
+## address-of-array-element
+- status: practicing
+- depends-on: pointers
+- introduced: 2026-09-16
+- last-reviewed: 2026-09-16
+- evidence: task 3.2. Wrote `distance_to(&drone, &mission[current_wp])` correctly first time after one explanation of the shape — index into the array to get a Waypoint value, then & to take its address. Connects the array work from 3.1 to the pointer work from section 2; no prompting needed on either &

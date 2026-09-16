@@ -4,7 +4,7 @@
 
 # The engine binary. Rebuilt whenever either source file is newer than it.
 drone: src/drone.c src/drone.h
-	gcc -Wall -Wextra -Werror -std=gnu11 -o drone src/drone.c
+	gcc -Wall -Wextra -Werror -std=gnu11 -o drone src/drone.c -lm
 
 run: drone
 	./drone

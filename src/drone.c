@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include "drone.h"
 #include <unistd.h>
+#include <math.h>
 
 /* How fast the drone climbs while taking off, in metres per second. */
 #define CLIMB_RATE_MPS 2.0
@@ -29,6 +30,19 @@
 void print_state(const DroneState *d) {
     printf("POS %6.1f,%6.1f   ALT %5.1f m   HDG %5.1f deg   SPD %6.1f m/s   BAT %5.1f %%\n", 
         d->x_m, d->y_m, d->altitude_m, d->heading_deg, d->speed_mps, d->battery_percent);
+}
+
+/*
+ * Straight-line horizontal distance from the drone to a waypoint, in metres.
+ * Altitude is ignored on purpose: steering is a two-dimensional problem.
+ */
+double distance_to(const DroneState *d, const Waypoint *w) {
+    double dx = w->x_m - d->x_m;   /* how far east the waypoint is from the drone */
+    double dy = w->y_m - d->y_m; /* how far north the waypoint is from the drone */
+        
+    double distance = sqrt(dx*dx + dy*dy);
+
+    return distance;
 }
 
 /*
@@ -84,6 +98,9 @@ int main(void) {
 
     };
 
+    /* Which waypoint we are flying to. Advancing this is task 3.5. */
+    int current_wp = 0;
+
     printf("DRONE-01 online\n");
 
     /* Announce the mission before flying it. */
@@ -98,6 +115,7 @@ int main(void) {
     while(1) {
         tick(&drone, TICK_S);
         print_state(&drone);
+        printf("   -> WP%d   %6.1f m\n", current_wp, distance_to(&drone, &mission[current_wp]));
         usleep(TICK_S * 1000000);
     }
 
