@@ -19,8 +19,9 @@
 /* Descent rate once the battery is flat, in metres per second. */
 #define DESCENT_RATE_MPS 1
 
-/* The altitude the drone climbs to and then holds, in metres. */
-#define CRUISE_ALTITUDE_M 100
+/* How fast the drone flies toward a waypoint, in metres per second. */
+#define CRUISE_SPEED_MPS 10.0
+
 
 /* How many waypoints the mission has. An array does not remember its own
    length, so the count lives here and every loop is checked against it. */
@@ -49,7 +50,7 @@ double distance_to(const DroneState *d, const Waypoint *w) {
  * Compass heading from the drone to a waypoint, in degrees.
  * 0 = north, 90 = east — the same convention as DroneState.heading_deg.
  */
-double heading_to(const DroneState *d, const Waypoint *w) {
+double bearing_to(const DroneState *d, const Waypoint *w) {
     double dx = w->x_m - d->x_m;   /* metres east  */
     double dy = w->y_m - d->y_m;   /* metres north */
 
@@ -57,7 +58,7 @@ double heading_to(const DroneState *d, const Waypoint *w) {
        is in radians, somewhere between -pi and +pi. */
     double radians = atan2(dx, dy);
 
-    double degrees = radians * (180.0 /M_PI);
+    double degrees = radians * (180.0 / M_PI);
 
     if (degrees < 0) {
         degrees += 360;
@@ -70,12 +71,34 @@ double heading_to(const DroneState *d, const Waypoint *w) {
  * Advance the drone by one tick: dt seconds of simulated time have passed,
  * so edit the state into how it will be at the end of that slice.
  */
-void tick(DroneState *d, double dt) {
+void tick(DroneState *d, const Waypoint *target, double dt) {
     
     d->battery_percent -= DRAIN_RATE_PCT_PER_S * dt;
 
     if (d->battery_percent <= 0.0) {
         d->battery_percent = 0.0;
+    }
+
+    /* Navigation: point at the target and fly, while there is power left. */
+    if (d->battery_percent > 0.0) {
+        double target_bearing = bearing_to(d,target);
+        d->heading_deg = target_bearing;
+        d->speed_mps = CRUISE_SPEED_MPS;
+
+        /* TODO(you): convert d->heading_deg into radians. This is the exact
+           inverse of the conversion you wrote inside bearing_to(). */
+        double heading_radians = d->heading_deg * (M_PI / 180.0);
+
+
+        /* TODO(you): move east. Add (speed * dt) times the east share
+           to d->x_m. */
+        d->x_m += (d->speed_mps * dt) * sin(heading_radians) ;
+
+        /* TODO(you): move north, the same way, into d->y_m. */
+        d->y_m += d->speed_mps * dt * cos(heading_radians);
+
+    } else {
+        d->speed_mps = 0.0;
     }
 
     /* If battery is flat but still in the air */
@@ -88,16 +111,17 @@ void tick(DroneState *d, double dt) {
         }
 
     /* Climb at the climb rate, then clamp so one tick cannot
-        carry it past the cruise altitude. */
-    } else if (d->battery_percent > 0.0 && d->altitude_m < CRUISE_ALTITUDE_M) {
+        carry it past the target altitude. */
+    } else if (d->battery_percent > 0.0 && d->altitude_m < target->altitude_m) {
         d->altitude_m += CLIMB_RATE_MPS * dt;
 
-        /* Altitude should not be aboce cruise altitude. */
-        if (d->altitude_m >  CRUISE_ALTITUDE_M) {
-            d->altitude_m = CRUISE_ALTITUDE_M;
+        /* Altitude should not be above target altitude. */
+        if (d->altitude_m >  target->altitude_m) {
+            d->altitude_m = target->altitude_m;
         }
     } else {
-        /*Altitude does not change when landed */
+        /*Altitude is already where it should be - either holding at the target altitude
+        or on the ground */
     }
 }
 
@@ -134,9 +158,9 @@ int main(void) {
     print_state(&drone);
 
     while(1) {
-        tick(&drone, TICK_S);
+        tick(&drone, &mission[current_wp], TICK_S);
         print_state(&drone);
-        printf("   -> WP%d   %6.1f m   HDG %5.1f deg\n", current_wp, distance_to(&drone, &mission[current_wp]), heading_to(&drone, &mission[current_wp]));
+        printf("   -> WP%d   %6.1f m   BRG %5.1f deg\n", current_wp, distance_to(&drone, &mission[current_wp]), bearing_to(&drone, &mission[current_wp]));
         usleep(TICK_S * 1000000);
     }
 

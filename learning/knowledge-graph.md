@@ -25,11 +25,11 @@
 - evidence: self-reported — currently attempting to implement pointers and reading up on them. 2026-09-14 asked directly about `*` in declarations vs expressions and about `struct Node *next`; was given the address/dereference distinction, the `->` shorthand, and the pass-by-value argument for why section 2's tick function must take a DroneState *. Then wrote print_state(const DroneState *d) themselves — six `d->field` reads and a `print_state(&drone)` call site, all correct first time, no prompting on the `&`. 2026-09-15 wrote the tick signature `void tick(DroneState *d, ...)` from the print_state pattern, and every call site as `tick(&drone, 0.05)` — six correct `&` uses, no prompting. 2026-09-15 wrote the clamp as `if (battery < 0)` — a bare name with nothing in scope — and corrected to `d->battery_percent` once reminded that only d and dt exist inside tick(). Struct fields are not loose variables; the pointer is the only route in. 2026-09-16 wrote `D->altitude_m` with a capital D; C is case-sensitive and there is no such name
 
 ## const-correctness
-- status: practicing
+- status: understood
 - depends-on: pointers
 - introduced: 2026-09-14
-- last-reviewed: 2026-09-15
-- evidence: used `const DroneState *d` on print_state after the rationale — a compiler-enforced promise not to modify, and the contrast that will make section 2's un-const `update(DroneState *)` legible. Applied as given, not yet independently reasoned about. 2026-09-15 reasoned it out independently before being told: asked for the tick signature, dropped the const and said why — "dronestate isnt const because we are chaning it". The contrast the section-1 lesson predicted would land, landed
+- last-reviewed: 2026-09-17
+- evidence: 2026-09-17 retrieved it cold, three days later, with no prompting: asked what type tick's new third parameter should be, answered `Waypoint * w`, then when asked whether it should be const, answered "no it should be const" — reasoning from the fact that tick writes the drone and only reads the waypoint. Earlier: used `const DroneState *d` on print_state after the rationale — a compiler-enforced promise not to modify, and the contrast that will make section 2's un-const `update(DroneState *)` legible. Applied as given, not yet independently reasoned about. 2026-09-15 reasoned it out independently before being told: asked for the tick signature, dropped the const and said why — "dronestate isnt const because we are chaning it". The contrast the section-1 lesson predicted would land, landed
 
 ## struct
 - status: practicing
@@ -211,7 +211,7 @@
 - depends-on: vectors-and-distance
 - introduced: 2026-09-16
 - last-reviewed: 2026-09-16
-- evidence: task 3.3. Wrote the negative-angle fold themselves (`if (degrees < 0) degrees += 360;`) and the return, after the -90-is-also-270 framing; the degrees conversion line itself was given as a hint after a long stall. Predicted the heading to WP0 (10 east, 40 north) as "around 90 degrees, top right quadrant" — quadrant right, scale wrong; when asked which axis dominates, corrected unprompted to "below 45". Real answer 14.0 deg. Also extended the telemetry printf to a five-argument line with a second function call in it, unaided
+- evidence: 2026-09-17 task 3.4 — wrote the sin/cos movement lines and the degrees-to-radians conversion (the inverse of 3.3's, which had been given to them), all three correct. Predicted the overshoot before running: "it arrives but keeps going then turns back around", which is exactly what happened — the bearing flipping 14.0 -> 194.0 and oscillating forever. Earlier, task 3.3. Wrote the negative-angle fold themselves (`if (degrees < 0) degrees += 360;`) and the return, after the -90-is-also-270 framing; the degrees conversion line itself was given as a hint after a long stall. Predicted the heading to WP0 (10 east, 40 north) as "around 90 degrees, top right quadrant" — quadrant right, scale wrong; when asked which axis dominates, corrected unprompted to "below 45". Real answer 14.0 deg. Also extended the telemetry printf to a five-argument line with a second function call in it, unaided
 
 ## waypoint-list
 - status: practicing
@@ -704,11 +704,11 @@
 - evidence: found two bugs from one cause, and traced both by hand. First the landing flicker (0.0, 0.1, 0.0, 0.1 forever): the descent branch required flat AND airborne, so a flat-and-landed drone fell through to a climb branch that never asked about power. Correctly identified which branch ran and proposed the guard as the fix. Then the teleport (0.0 to 100.0 in one tick) from an else that assigned rather than held, and answered correctly that a hold branch should be empty. Asked for a review of the whole implementation unprompted, which earned the naming: the situation is never written down, only inferred from two numbers every tick
 
 ## comments-that-lie
-- status: introduced
+- status: practicing
 - depends-on: none
 - introduced: 2026-09-16
 - last-reviewed: 2026-09-16
-- evidence: 2026-09-16 met it a third time, on their own new code: the three Waypoint field comments were copied from DroneState and still read "position east of the launch point" inside a struct that describes a target, not the vehicle. Rewrote them as "target position ..." once it was pointed out. Still flagged rather than self-caught. Earlier: twice in one sitting — a ceiling clamp labelled "Altitude cannot be less than 0", copy-pasted from its floor twin, and a battery comment still claiming "about 20 minutes (1200s)" over a value changed to (100.0 / 10) for testing. The rule given: a wrong comment is worse than none, because the reader trusts it over the code. Flagged, not yet independently caught
+- evidence: 2026-09-17 caught one themselves for the first time, unprompted — asked whether `/*Altitude does not change when landed */` was correct on an else branch that the drone actually spends most of its flight in (battery fine, already at target altitude). Reasoned about which cases reach the branch rather than reading the words. That question also surfaced a real bug neither of us had noticed: nothing descends the drone while the battery is healthy, so with WP1 at 400 m and WP2 at 310 m it can never come down. Parked for 3.5. Earlier: 2026-09-16 met it a third time, on their own new code: the three Waypoint field comments were copied from DroneState and still read "position east of the launch point" inside a struct that describes a target, not the vehicle. Rewrote them as "target position ..." once it was pointed out. Still flagged rather than self-caught. Earlier: twice in one sitting — a ceiling clamp labelled "Altitude cannot be less than 0", copy-pasted from its floor twin, and a battery comment still claiming "about 20 minutes (1200s)" over a value changed to (100.0 / 10) for testing. The rule given: a wrong comment is worse than none, because the reader trusts it over the code. Flagged, not yet independently caught
 
 ## for-loop
 - status: practicing
@@ -779,3 +779,24 @@
 - introduced: 2026-09-16
 - last-reviewed: 2026-09-16
 - evidence: task 3.3, flagged as a near-miss rather than earned. Wrote `180 / M_PI`, which is safe only because M_PI is a double and promotes the 180; pointed out that `180 / 200` between two ints would be 0, not 0.9, and that writing the .0 explicitly is the habit worth having. Not yet hit as a real bug
+
+## trig-components
+- status: practicing
+- depends-on: heading-and-direction
+- introduced: 2026-09-17
+- last-reviewed: 2026-09-17
+- evidence: task 3.4, and the longest genuine struggle of the journey — five rounds of questions before it landed, every one of them a good question. Accepted the "fractions of a step" framing immediately but rejected hand-waving on where the fractions come from: "i understand the fractions part. i do not understand the sin and cos", then "is it soh cah toa?", then a step further back to "what are we doing, why are we doing d->x_m y_m". Needed the unit-circle definition (walk one metre at angle theta and sin/cos ARE the coordinates you land on) plus the bridge that a ratio over a hypotenuse of 1 is the same number as the coordinate. Arrived at it in their own words: "so we multiply sin by the hypotenuse, which be 1 metre or 0.8 metres... we are trying to find out how east or north". Then wrote all three lines correctly
+
+## bearing-vs-heading
+- status: practicing
+- depends-on: heading-and-direction
+- introduced: 2026-09-17
+- last-reviewed: 2026-09-17
+- evidence: raised the distinction themselves, unprompted, mid-task: "shouldnt we rename and/or add the name bearing to distinguish between bearing and heading?" — a domain-vocabulary correction the lesson had not taught and the plan had not scheduled. Correct: the function computed a bearing and was named heading_to. Then asked for the difference to be spelled out, so the naming instinct arrived ahead of the full concept. Renamed to bearing_to across all four sites, and separately caught that main's printf still labelled the column HDG. Follow-up question was sharp too — whether bearing_to itself needed changing, which earned the answer that a bearing is purely positional and re-derived every tick
+
+## passing-dependencies-as-parameters
+- status: practicing
+- depends-on: functions-over-main
+- introduced: 2026-09-17
+- last-reviewed: 2026-09-17
+- evidence: task 3.4 opened on the design problem rather than the maths — tick() could not see the mission, so its signature had to grow. Named the parameter type `Waypoint *` unaided and, asked separately, reasoned out const correctly. Then fixed the call site in main to match. The wider idea (a function's parameters are its whole view of the world, and widening that view is a deliberate decision) was demonstrated in one instance, not yet stated back

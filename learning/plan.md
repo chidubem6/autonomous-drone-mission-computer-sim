@@ -39,8 +39,9 @@
 - [x] 3.1 A Waypoint struct and the mission: an array of three of them, printed at startup
 - [x] 3.2 How far to go: straight-line distance from the drone to the current waypoint
 - [x] 3.3 Which way to go: the direction to the waypoint, and the heading in degrees
-- [ ] 3.4 Flying it: move along that direction every tick at cruise speed
+- [x] 3.4 Flying it: move along that direction every tick at cruise speed
 - [ ] 3.5 Arrival: a "close enough" threshold, advancing to the next waypoint, announcing each one
+      - known gap found in 3.4: nothing descends the drone while the battery is healthy, so a waypoint lower than the previous one is unreachable (WP1 at 400 m, WP2 at 310 m). Fix here.
 - [ ] 3.6 Flight modes: an enum and the state machine that runs TAKEOFF -> NAVIGATE -> COMPLETE
 
 ### 4. Proving it's right  [ ] not started
