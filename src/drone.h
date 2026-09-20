@@ -5,6 +5,16 @@
 #ifndef DRONE_H
 #define DRONE_H
 
+/*
+ * The three things the drone can be doing. A FlightMode variable holds
+ * exactly one of these names, never an unlabelled number.
+ */
+typedef enum {
+    MODE_TAKEOFF,
+    MODE_NAVIGATE,
+    MODE_COMPLETE,
+} FlightMode;
+
 typedef struct {
     double x_m;   /* position east of the launch point, in metres */
     double y_m;   /* position north of the launch point, in metres */
@@ -12,6 +22,7 @@ typedef struct {
     double heading_deg; /* heading in degrees, 0 = north, 90 = east, 180 = south, 270 = west */
     double speed_mps; /* speed in metres per second */
     double battery_percent; /* battery charge remaining, in percent */
+    FlightMode mode; /* the current state a drone is in */
 } DroneState;
 
 /*

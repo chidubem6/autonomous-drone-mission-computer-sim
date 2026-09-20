@@ -42,8 +42,8 @@
 - status: practicing
 - depends-on: struct
 - introduced: 2026-09-14
-- last-reviewed: 2026-09-14
-- evidence: wrote src/drone.h and included it from drone.c with quotes rather than angle brackets, after the "next to this file" vs "system directories" distinction
+- last-reviewed: 2026-09-20
+- evidence: wrote src/drone.h and included it from drone.c with quotes rather than angle brackets, after the "next to this file" vs "system directories" distinction. 2026-09-20 review: correctly placed a new type in drone.h rather than drone.c, but could not say why - "it seems like it belongs there, like its just good practice". The rule (a header holds what more than one .c file must agree on; the .c holds the private machinery) was given again, grounded in section 4's test program needing DroneState. Right answer, no rule behind it yet - re-review
 
 ## preprocessor
 - status: practicing
@@ -61,10 +61,10 @@
 
 ## undefined-behaviour
 - status: practicing
-- depends-on: compiler-warnings
-- introduced: 2026-09-14
+- depends-on: manual-memory-management
+- introduced: 2026-09-20
 - last-reviewed: 2026-09-20
-- evidence: 2026-09-16 met it a second way, via array bounds: predicted correctly and unprompted that `i <= COUNT` "would try and read past the list", but guessed the reason was that the access is "still a valid access". Corrected to the real one — it is not valid, it is unchecked; `mission[3]` is arithmetic (base + 3 x sizeof) that succeeds for any index, and C stores no length to compare against, so there is nothing to check WITH. Asked the question honestly rather than guessing silently. 2026-09-14: deliberate %d-on-a-double break. Predicted compile and run correctly but expected C to silently convert the double to an int; the real output was garbage (6 here, 2102178464 on their run). Asked unprompted why the value varies between machines and runs, which earned the calling-convention answer: doubles travel in floating-point registers, %d reads the integer slot, and finds leftovers 2026-09-20 predicted unprompted that current_wp becomes 3 after the last waypoint and that &mission[current_wp] would then be 'memory outside the array'. Predicted the same failure a second time, independently, when asked what the next tick would do if MISSION COMPLETE printed without a break.
+- evidence: 2026-09-20 pushed hard on uninitialized locals rather than accepting the rule - asked for an example, then asked outright "how can anything be in DroneState a;". That is the real crux, and it took the reframe that declaring a variable claims existing memory rather than creating fresh memory. Ran the experiment: DroneState ghost; + print_state(&ghost), hit -Werror=maybe-uninitialized, rebuilt without the warning flags, and saw POS -nan, 0.0 ALT 0.0 - mostly zeros from the OS's wiped pages, with one field holding scribble left by the C runtime's startup code. Also reasoned correctly about the array-bounds half: asked what stops &mission[3] once break is removed, answered "the while condition being false"
 
 ## arrays-of-structs
 - status: practicing
@@ -74,11 +74,11 @@
 - evidence: task 3.1. First attempt put the array's own name inside its initializer — `{mission.x_m = 10, ...}` — held to across three corrections, which surfaced the real question they were asking: how do you say WHICH slot a value goes in. Asked unprompted how other languages initialise arrays, and separately why C uses `{ }` rather than `[ ]`; both were answered (position is the index; `[ ]` is already taken by declaration and subscript, and `[0] =` is C's slot designator). Wrote the three-waypoint literal correctly once the prefix was removed. Then wrote the full read side — `mission[i].x_m` and its two siblings inside a four-slot printf — after being shown one of the three arguments
 
 ## enums
-- status: seed
+- status: practicing
 - depends-on: none
-- introduced: —
-- last-reviewed: —
-- evidence: —
+- introduced: 2026-09-20
+- last-reviewed: 2026-09-20
+- evidence: 2026-09-20 wrote the FlightMode enum (MODE_TAKEOFF, MODE_NAVIGATE, MODE_COMPLETE), added the FlightMode mode field to DroneState, and set it explicitly in main()'s initializer. Predicted correctly, before writing any of it, that an unmentioned field would come out 0 and that 0 would mean MODE_TAKEOFF because it is listed first - and accepted that being right by accident is fragile under reordering. Asked unprompted whether a MODE_OFF was needed; was given the test (is there a situation no name describes?) and shown the real hole it exposes - a battery-flat drone still reporting MODE_NAVIGATE. Typo'd NODE_COMPLETE and fixed it once told, after being shown that the compiler would only complain later, at the use site
 
 ## printf-format
 - status: practicing
@@ -90,9 +90,9 @@
 ## floating-point-numbers
 - status: practicing
 - depends-on: none
-- introduced: 2026-09-14
-- last-reviewed: 2026-09-15
-- evidence: every DroneState field is a double because the drone moves 0.5 m per tick — integers would round every tick to nothing. Applied but not yet independently reasoned about. 2026-09-15 extended it from struct fields to a function parameter, choosing double for dt with the rounding argument in their own words
+- introduced: 2026-09-15
+- last-reviewed: 2026-09-20
+- evidence: met doubles as the type for every physical quantity in DroneState, and the reason integers were wrong for a 0.05 s tick. 2026-09-20 met NaN for the first time via the ghost experiment, then answered the follow-up correctly: asked what a clamp written as if (d->altitude_m > target->altitude_m) does when altitude is NaN, said the branch does not fire because the comparison is false. Was shown the sharper version - every branch in the chain declines and the empty hold else catches it, so the drone reports holding steady at an altitude of NaN. The general rule (NaN makes every comparison false, so guards fail open) landed; isnan() parked for section 4
 
 ## compiling-c
 - status: practicing
@@ -111,9 +111,9 @@
 ## compiler-warnings
 - status: practicing
 - depends-on: compiling-c
-- introduced: 2026-09-14
-- last-reviewed: 2026-09-16
-- evidence: 2026-09-16 hit two new ones in task 3.1 under -Werror. `variable 'mission' set but not used` after filling the array and never reading it — understood as unfinished rather than broken, and cleared by writing the loop that reads it, not by silencing it. Also created a format/argument mismatch mid-edit (`%.1f` with no value behind it) and was shown the one-slot-one-argument rule before building. Earlier: watched -Wformat fire on a deliberate %d/double mismatch and saw the program still build and print nonsense, then adopted -Werror so a warning cannot be scrolled past. Also saw the limit of the tool: a stray `!` inside a format string passed every flag, because the compiler checks well-formedness, never intent. 2026-09-15 hit `implicit declaration of function usleep` under -Werror and read the error without alarm. The cause chain (-std=c11 sets __STRICT_ANSI__, glibc hides non-ISO declarations, the preprocessor deletes the line, the compiler then meets an unknown name) was explained across three passes at their request; the fix -std=c11 -> -std=gnu11 was dictated, not derived
+- introduced: 2026-09-16
+- last-reviewed: 2026-09-20
+- evidence: 2026-09-16 met -Wall -Wextra -Werror in the Makefile as a deliberate choice rather than noise. 2026-09-20 had two of them fire for real. First -Werror=maybe-uninitialized on the ghost experiment; read it together, including that "may" means the compiler could not prove it, that the bracketed name identifies the specific check, and that the net has holes once a pointer crosses a function boundary. Then hit -Werror=unused-value on his own d->mode == MODE_NAVIGATE; and self-corrected from the code rather than the message - recognised he had written a comparison where he meant an assignment, without reading the error
 
 ## project-structure
 - status: introduced
@@ -228,11 +228,11 @@
 - evidence: 2026-09-20 computed the per-tick step unaided (0.5 m from 10 m/s x 0.05 s) and predicted that an equality test would sometimes land on zero but usually step over. First pick for the radius was 0.10 m — smaller than the step — and when walked through the 0.4 m case answered correctly that the drone would end up 0.1 m past, i.e. never inside the circle. Corrected to 5. Wrote the arrival condition itself: distance_to(&drone, &mission[current_wp]) <= ARRIVAL_RADIUS_M.
 
 ## finite-state-machine
-- status: seed
+- status: practicing
 - depends-on: enums
-- introduced: —
-- last-reviewed: 2026-09-16
-- evidence: motivation earned the hard way on 2026-09-16, before the concept was taught. Two separate bugs in section 2.5 came from the same cause — the drone's situation was inferred from number combinations rather than stored — and the learner diagnosed both by tracing the chain by hand. Comes due in section 3
+- introduced: 2026-09-20
+- last-reviewed: 2026-09-20
+- evidence: motivation earned the hard way on 2026-09-16, before the concept was taught. Two separate bugs in section 2.5 came from the same cause - the drone's situation was inferred from number combinations rather than stored - and the learner diagnosed both by tracing the chain by hand. 2026-09-20 built it: asked what MODE_TAKEOFF should do, answered the whole design unprompted - rise to target altitude, do not move forward, transition on reaching it. Wrote the mode gate on the navigation branch (d->battery_percent > 0.0 && d->mode == MODE_NAVIGATE) and the transition rule at the end of tick(). Then wrote the main() half ahead of the scaffolding being offered: while (drone.mode != MODE_COMPLETE) replacing while(1), and drone.mode = MODE_COMPLETE replacing break. Mission now flies TAKEOFF -> NAVIGATE -> COMPLETE end to end
 
 ## test-is-a-claim
 - status: introduced
@@ -697,11 +697,11 @@
 - evidence: self-reported prior knowledge — demonstrated rather than claimed. Wrote `d->battery_percent <= 0 && d->altitude_m > 0.0` unprompted, ahead of the lesson, and used it correctly to express "flat AND still airborne". Treated as exercise for the rest of the session rather than taught
 
 ## implicit-state
-- status: introduced
+- status: practicing
 - depends-on: conditionals
 - introduced: 2026-09-16
-- last-reviewed: 2026-09-16
-- evidence: found two bugs from one cause, and traced both by hand. First the landing flicker (0.0, 0.1, 0.0, 0.1 forever): the descent branch required flat AND airborne, so a flat-and-landed drone fell through to a climb branch that never asked about power. Correctly identified which branch ran and proposed the guard as the fix. Then the teleport (0.0 to 100.0 in one tick) from an else that assigned rather than held, and answered correctly that a hold branch should be empty. Asked for a review of the whole implementation unprompted, which earned the naming: the situation is never written down, only inferred from two numbers every tick
+- last-reviewed: 2026-09-20
+- evidence: found two bugs from one cause on 2026-09-16, and traced both by hand. First the landing flicker (0.0, 0.1, 0.0, 0.1 forever): the descent branch required flat AND airborne, so a flat-and-landed drone fell through to a climb branch that never asked about power. Correctly identified which branch ran and proposed the guard as the fix. Then the teleport (0.0 to 100.0 in one tick) from an else that assigned rather than held, and answered correctly that a hold branch should be empty. Asked for a review of the whole implementation unprompted, which earned the naming: the situation is never written down, only inferred from two numbers every tick. 2026-09-20 cured it for takeoff and completion - mode is now stored and read rather than recomputed - and spotted the remaining instance himself by asking whether another mode was needed
 
 ## comments-that-lie
 - status: practicing
@@ -806,7 +806,7 @@
 - depends-on: main-loop, conditionals
 - introduced: 2026-09-20
 - last-reviewed: 2026-09-20
-- evidence: 2026-09-20 first met break as the way an infinite while(1) stops. Omitted it on the first attempt, then predicted correctly what the next tick would do without it — use current_wp 3 and read outside the array — and added it. The mission now ends rather than flying to a waypoint that does not exist.
+- evidence: 2026-09-20 used break to leave the infinite main loop once the last waypoint was reached, and understood it as the thing preventing an out-of-bounds read of mission[3]. Later the same day replaced it: the loop condition became while (drone.mode != MODE_COMPLETE) and break became an assignment. Answered correctly that the array is now protected by the while condition being false, and was shown the precise mechanism - while tests before each pass, so the dangerous expression at the top of the body is never reached - plus the contrast with do/while, which would read mission[3] once before stopping
 
 ## off-by-one-errors
 - status: practicing
@@ -821,3 +821,31 @@
 - introduced: 2026-09-20
 - last-reviewed: 2026-09-20
 - evidence: 2026-09-20 wrote `d->battery_percent` as a bare condition alongside a sibling branch asking `> 0.0`. Asked what the bare name tests, answered "does it have a value?" — close, but the rule is zero is false and anything else is true, so it means != 0. Then applied it correctly: asked which branch would think a battery reading -5.0 still had power, answered the descent branch. Fixed both branches to ask the same question.
+
+## zero-initialization
+- status: practicing
+- depends-on: struct, undefined-behaviour
+- introduced: 2026-09-20
+- last-reviewed: 2026-09-20
+- evidence: 2026-09-20 predicted correctly, unprompted, that a field added to DroneState but left out of main()'s initializer list would come out 0, and that this made MODE_TAKEOFF the accidental default. Was then given the boundary: that guarantee belongs to the = { ... } initializer, not to structs generally - a bare local gets leftovers, = {0} zeroes everything, = { .x_m = 5.0 } zeroes everything else. Set .mode explicitly anyway rather than relying on the zero
+
+## stack-memory-reuse
+- status: practicing
+- depends-on: undefined-behaviour, manual-memory-management
+- introduced: 2026-09-20
+- last-reviewed: 2026-09-20
+- evidence: 2026-09-20 refused to accept the rule without the mechanism - "BUT HOW CAN ANYTHING BE IN DRONESTATE A;" - which is exactly the right place to get stuck. Needed the reframe that a declaration claims memory that already exists rather than creating fresh memory, that every byte of RAM always holds some value, and that returning from a function erases nothing. Confirmed by running the ghost experiment and seeing C-runtime leftovers in a field he never wrote to
+
+## nan-and-float-comparison
+- status: introduced
+- depends-on: floating-point-numbers
+- introduced: 2026-09-20
+- last-reviewed: 2026-09-20
+- evidence: met NaN as a real value in his own program's output (POS -nan). Answered correctly that a NaN altitude makes a clamp's if fail, and took the point that the failure is silent rather than loud. Not yet applied: the transition rule he wrote compares two doubles with == and works only because the clamp assigns the exact target value. isnan() and tolerance comparisons parked for section 4
+
+## code-smell
+- status: introduced
+- depends-on: none
+- introduced: 2026-09-20
+- last-reviewed: 2026-09-20
+- evidence: asked what "a small smell" meant after being told the printf inside tick() was one. Given the definition (not a bug; a hint the design is off) and the concrete cost here: tick() now does two jobs, so section 4's test program cannot call it without text spraying out, and section 5's JSON change has to touch simulation code that did not change

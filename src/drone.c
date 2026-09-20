@@ -87,8 +87,9 @@ void tick(DroneState *d, const Waypoint *target, double dt) {
         d->battery_percent = 0.0;
     }
 
-    /* Navigation: point at the target and fly, while there is power left. */
-    if (d->battery_percent > 0.0) {
+    /* Navigation: point at the target and fly — but only while NAVIGATING,
+       and only while there is power left. */
+    if (d->battery_percent > 0.0 && d->mode == MODE_NAVIGATE) {
         double target_bearing = bearing_to(d,target);
         d->heading_deg = target_bearing;
         d->speed_mps = CRUISE_SPEED_MPS;
@@ -118,27 +119,36 @@ void tick(DroneState *d, const Waypoint *target, double dt) {
             d->altitude_m = 0.0;
         }
 
-    /* Climb at the climb rate, then clamp so one tick cannot
-        carry it past the target altitude. */
+    /* Climb at the climb rate */
     } else if (d->battery_percent > 0.0 && d->altitude_m < target->altitude_m) {
-        d->altitude_m += CLIMB_RATE_MPS * dt;
+        double remaining_alt = target->altitude_m - d->altitude_m;
+        double step = CLIMB_RATE_MPS * dt;
 
-        /* Altitude should not be above target altitude. */
-        if (d->altitude_m > target->altitude_m) {
-            d->altitude_m = target->altitude_m;
+        /* Climb step cannot be larger than the remaining altitude */
+        if (step > remaining_alt) {
+            step = remaining_alt;
         }
-   
+        d->altitude_m += step;
+
     } else if (d->battery_percent > 0.0 && d->altitude_m > target->altitude_m) {
-        d->altitude_m -= CONTROLLED_DESCENT_RATE_MPS * dt;
+        double remaining_alt = d->altitude_m - target->altitude_m;
+        double step = CONTROLLED_DESCENT_RATE_MPS * dt;
 
-        /* Altitude should not be below target altitude. */
-        if (d->altitude_m < target->altitude_m) {
-            d->altitude_m = target->altitude_m;
+        if (step > remaining_alt) {
+            step = remaining_alt;
         }
+        d->altitude_m -= step;
 
     } else {
         /*Altitude is already where it should be - either holding at the target altitude
         or on the ground */
+    }
+
+    /* The transition rule. This is the entire state machine: read the current
+       mode, look at an event, write a new mode. */
+    if (d->mode == MODE_TAKEOFF && d->altitude_m >= target->altitude_m) {
+        d->mode = MODE_NAVIGATE;
+        printf("MODE NAVIGATE\n");
     }
 }
 
@@ -149,7 +159,8 @@ int main(void) {
         .altitude_m = 0.0,
         .heading_deg = 0.0,
         .speed_mps = 0.0,
-        .battery_percent = 100.0
+        .battery_percent = 100.0,
+        .mode = MODE_TAKEOFF,
     };
 
     /* The mission: the targets to fly to, in order. */
@@ -173,7 +184,7 @@ int main(void) {
 
     print_state(&drone);
 
-    while(1) {
+    while(drone.mode != MODE_COMPLETE ) {
         tick(&drone, &mission[current_wp], TICK_S);
         print_state(&drone);
         printf("   -> WP%d   %6.1f m   BRG %5.1f deg\n", current_wp, distance_to(&drone, &mission[current_wp]), bearing_to(&drone, &mission[current_wp]));
@@ -186,7 +197,7 @@ int main(void) {
 
             if (current_wp == MISSION_WAYPOINT_COUNT) {
                 printf("MISSION COMPLETE\n");
-                break;
+                drone.mode = MODE_COMPLETE;
             } 
 
         }

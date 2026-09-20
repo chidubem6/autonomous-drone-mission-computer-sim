@@ -32,7 +32,7 @@
 - [x] 2.4 A battery that drains with use
 - [x] 2.5 Takeoff, level off, and stop when the battery is flat
 
-### 3. A drone that flies a mission  [ ] not started
+### 3. A drone that flies a mission  [x] complete
 **Deliverable:** given three waypoints, it steers to each in turn, reports arrival, and finishes with COMPLETE.
 **Concepts:** arrays-of-structs, vectors-and-distance, heading-and-direction, arrival-threshold, finite-state-machine, enums
 **Tasks:**
@@ -43,7 +43,20 @@
 - [x] 3.5 Arrival: a "close enough" threshold, advancing to the next waypoint, announcing each one
       - the 3.4 descent gap is fixed: a fourth altitude branch descends at CONTROLLED_DESCENT_RATE_MPS when the battery is healthy and the drone is above its target, clamped so one tick cannot overshoot downward.
       - known gap found in 3.5: arrival is horizontal only, and the climb rate cannot keep up with the leg lengths — at 2 m/s over a 41 m leg flown at 10 m/s the drone gains 8 m, so the original 200/400/310 m waypoints were unreachable by two orders of magnitude. Altitudes were reduced to 12/20/8 m so the mission is coherent and the descent branch is observable. Decide in section 4 whether to keep short legs with low altitudes, or spread waypoints to realistic kilometre-scale distances and speed simulated time up.
-- [ ] 3.6 Flight modes: an enum and the state machine that runs TAKEOFF -> NAVIGATE -> COMPLETE
+- [x] 3.6 Flight modes: an enum and the state machine that runs TAKEOFF -> NAVIGATE -> COMPLETE
+      - takeoff is now a real phase: the drone climbs to WP0's altitude with no horizontal movement, then transitions. There is no
+        cruise-altitude constant - the climb target is the first waypoint's own altitude. A real vehicle would climb to a fixed safe
+        altitude first, for obstacle clearance; revisit in section 4 if the waypoint altitudes ever get spread out.
+      - gap found and deliberately deferred: the battery-flat emergency descent is still implicit state. A drone sinking at 5 m/s with
+        a dead battery still reports MODE_NAVIGATE. Add MODE_LANDING (or a failsafe mode) - the learner spotted this unprompted while
+        asking whether a MODE_OFF was needed. Due in section 4, where edge cases get tested.
+      - the transition rule compares two doubles with ==, which works only because the climb clamp assigns the exact target value.
+        Fragile if the altitude logic ever changes. Tie it to isnan()/tolerance comparisons in section 4.
+      - the climb branch now caps its step at the remaining gap (correct by construction, cannot overshoot) while both descent
+        branches still move-then-clamp. Two idioms for one idea. Convert the descents to match once section 4 has tests that can
+        prove the behaviour did not change.
+      - the printf inside tick() is a known compromise: tick() now both advances the simulation and writes to the terminal, which will
+        block section 4's test program from calling it quietly. Section 5's data contract is where it gets separated.
 
 ### 4. Proving it's right  [ ] not started
 **Deliverable:** `make test` runs the assertions and prints all-pass — including "east at 10 m/s for 1 second lands at x=10".
