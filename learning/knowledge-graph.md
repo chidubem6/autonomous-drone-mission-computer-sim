@@ -32,11 +32,11 @@
 - evidence: 2026-09-17 retrieved it cold, three days later, with no prompting: asked what type tick's new third parameter should be, answered `Waypoint * w`, then when asked whether it should be const, answered "no it should be const" — reasoning from the fact that tick writes the drone and only reads the waypoint. Earlier: used `const DroneState *d` on print_state after the rationale — a compiler-enforced promise not to modify, and the contrast that will make section 2's un-const `update(DroneState *)` legible. Applied as given, not yet independently reasoned about. 2026-09-15 reasoned it out independently before being told: asked for the tick signature, dropped the const and said why — "dronestate isnt const because we are chaning it". The contrast the section-1 lesson predicted would land, landed
 
 ## struct
-- status: practicing
+- status: understood
 - depends-on: none
 - introduced: 2026-09-14
-- last-reviewed: 2026-09-14
-- evidence: 2026-09-16 wrote the Waypoint struct in drone.h from the DroneState pattern — three double fields with units in the names — but left the type off the third (`altitude_m;` alone), and fixed it after being told that two of the three lines had something the third was missing. Earlier: wrote the six-field DroneState unaided from a two-field pattern, units carried in the field names, and initialised it with designated initialisers. Caught nothing wrong with `speed_ms` until it was pointed out that `ms` reads as milliseconds; renamed to `speed_mps`
+- last-reviewed: 2026-09-20
+- evidence: 2026-09-16 wrote the Waypoint struct in drone.h from the DroneState pattern — three double fields with units in the names — but left the type off the third (`altitude_m;` alone), and fixed it after being told that two of the three lines had something the third was missing. Earlier: wrote the six-field DroneState unaided from a two-field pattern, units carried in the field names, and initialised it with designated initialisers. Caught nothing wrong with `speed_ms` until it was pointed out that `ms` reads as milliseconds; renamed to `speed_mps` 2026-09-20 retrieved it cold after six days: asked why DroneState and Waypoint both carry an altitude field rather than being merged, answered that one is data about the drone and the other is where it is heading — the identity distinction, in their own words, unprompted.
 
 ## header-files
 - status: practicing
@@ -60,11 +60,11 @@
 - evidence: predicted the section 3 double-inclusion problem before being told — nav.h includes drone.h, drone.c includes both, so the struct arrives twice — then wrote the #ifndef/#define/#endif guard, closing #endif with a naming comment. 2026-09-15 identified the mechanism unaided when <unistd.h> appeared to declare nothing — named the #ifndef/#define machinery from drone.h as the reason a line inside a header can vanish, before being told. Generalised from include guards to conditional compilation
 
 ## undefined-behaviour
-- status: introduced
+- status: practicing
 - depends-on: compiler-warnings
 - introduced: 2026-09-14
-- last-reviewed: 2026-09-16
-- evidence: 2026-09-16 met it a second way, via array bounds: predicted correctly and unprompted that `i <= COUNT` "would try and read past the list", but guessed the reason was that the access is "still a valid access". Corrected to the real one — it is not valid, it is unchecked; `mission[3]` is arithmetic (base + 3 x sizeof) that succeeds for any index, and C stores no length to compare against, so there is nothing to check WITH. Asked the question honestly rather than guessing silently. 2026-09-14: deliberate %d-on-a-double break. Predicted compile and run correctly but expected C to silently convert the double to an int; the real output was garbage (6 here, 2102178464 on their run). Asked unprompted why the value varies between machines and runs, which earned the calling-convention answer: doubles travel in floating-point registers, %d reads the integer slot, and finds leftovers
+- last-reviewed: 2026-09-20
+- evidence: 2026-09-16 met it a second way, via array bounds: predicted correctly and unprompted that `i <= COUNT` "would try and read past the list", but guessed the reason was that the access is "still a valid access". Corrected to the real one — it is not valid, it is unchecked; `mission[3]` is arithmetic (base + 3 x sizeof) that succeeds for any index, and C stores no length to compare against, so there is nothing to check WITH. Asked the question honestly rather than guessing silently. 2026-09-14: deliberate %d-on-a-double break. Predicted compile and run correctly but expected C to silently convert the double to an int; the real output was garbage (6 here, 2102178464 on their run). Asked unprompted why the value varies between machines and runs, which earned the calling-convention answer: doubles travel in floating-point registers, %d reads the integer slot, and finds leftovers 2026-09-20 predicted unprompted that current_wp becomes 3 after the last waypoint and that &mission[current_wp] would then be 'memory outside the array'. Predicted the same failure a second time, independently, when asked what the next tick would do if MISSION COMPLETE printed without a break.
 
 ## arrays-of-structs
 - status: practicing
@@ -221,11 +221,11 @@
 - evidence: task 3.1. Chose their own three-waypoint route (10,40 / 50,25 / 95,75) and wrote it as a Waypoint array in main(), announced at startup before the flight loop. Picked waypoint altitudes of 200-400 m against a CRUISE_ALTITUDE_M of 100 — flagged for them as something task 3.4 has to reconcile, not yet resolved
 
 ## arrival-threshold
-- status: seed
+- status: practicing
 - depends-on: vectors-and-distance
-- introduced: —
-- last-reviewed: —
-- evidence: —
+- introduced: 2026-09-20
+- last-reviewed: 2026-09-20
+- evidence: 2026-09-20 computed the per-tick step unaided (0.5 m from 10 m/s x 0.05 s) and predicted that an equality test would sometimes land on zero but usually step over. First pick for the radius was 0.10 m — smaller than the step — and when walked through the 0.4 m case answered correctly that the drone would end up 0.1 m past, i.e. never inside the circle. Corrected to 5. Wrote the arrival condition itself: distance_to(&drone, &mission[current_wp]) <= ARRIVAL_RADIUS_M.
 
 ## finite-state-machine
 - status: seed
@@ -616,8 +616,8 @@
 - status: practicing
 - depends-on: preprocessor
 - introduced: 2026-09-15
-- last-reviewed: 2026-09-15
-- evidence: CLIMB_RATE_MPS entered as a #define rather than a DroneState field, on the reasoning that a climb rate is a property of how this drone flies, not of where it is right now. Used correctly in the tick body; the preprocessor-substitution link was given, not derived. defined TICK_S themselves and used it at the call site rather than a bare 0.05, after the magic-number argument. Wrote it as `#define TICK_S = 0.05` — an assignment, not a substitution — and fixed it once the expansion `tick(&drone, = 0.05);` was spelled out. wrote DRAIN_RATE_PCT_PER_S as the expression (100.0 / 1200.0) so the model stays readable, after the parenthesis rule was given (a macro body is text and can be torn apart by what surrounds it). Took three passes: an empty `#define BATTERY`, then a DARIN typo, then correct. Also renamed TICK_S to TICK_PER_S without moving its two call sites, and reverted it
+- last-reviewed: 2026-09-20
+- evidence: CLIMB_RATE_MPS entered as a #define rather than a DroneState field, on the reasoning that a climb rate is a property of how this drone flies, not of where it is right now. Used correctly in the tick body; the preprocessor-substitution link was given, not derived. defined TICK_S themselves and used it at the call site rather than a bare 0.05, after the magic-number argument. Wrote it as `#define TICK_S = 0.05` — an assignment, not a substitution — and fixed it once the expansion `tick(&drone, = 0.05);` was spelled out. wrote DRAIN_RATE_PCT_PER_S as the expression (100.0 / 1200.0) so the model stays readable, after the parenthesis rule was given (a macro body is text and can be torn apart by what surrounds it). Took three passes: an empty `#define BATTERY`, then a DARIN typo, then correct. Also renamed TICK_S to TICK_PER_S without moving its two call sites, and reverted it 2026-09-20 added CONTROLLED_DESCENT_RATE_MPS as its own named constant for commanded descent, distinct from the powerless sink rate.
 
 ## functions-over-main
 - status: practicing
@@ -665,15 +665,15 @@
 - status: practicing
 - depends-on: main-loop
 - introduced: 2026-09-15
-- last-reviewed: 2026-09-16
-- evidence: first if statement in the project. Wrote the shape unaided — condition, comparison operator, braces, assignment inside — needing only the correction from a bare `battery` to `d->battery_percent`. Met the comparison operators and the `==` vs `=` trap (assignment inside a condition is legal C, which is part of why -Wall is on); the trap was explained, not encountered. 2026-09-16 built a three-branch if / else if / else chain. Answered the ordering question before writing any code — a climb check placed first would win and the battery branch would be dead. Needed the chain shape scaffolded into the file after writing two separate ifs, then filled every condition and body themselves. Met the bare-truthiness trap: `else if (d->altitude_m)` compiles and silently means "altitude is not zero"
+- last-reviewed: 2026-09-20
+- evidence: first if statement in the project. Wrote the shape unaided — condition, comparison operator, braces, assignment inside — needing only the correction from a bare `battery` to `d->battery_percent`. Met the comparison operators and the `==` vs `=` trap (assignment inside a condition is legal C, which is part of why -Wall is on); the trap was explained, not encountered. 2026-09-16 built a three-branch if / else if / else chain. Answered the ordering question before writing any code — a climb check placed first would win and the battery branch would be dead. Needed the chain shape scaffolded into the file after writing two separate ifs, then filled every condition and body themselves. Met the bare-truthiness trap: `else if (d->altitude_m)` compiles and silently means "altitude is not zero" 2026-09-20 wrote the missing descent branch as a mirror of the climb branch, getting all three flips right first time: the comparison (altitude above target), the sign (-=), and the direction of the clamp.
 
 ## clamping
 - status: practicing
 - depends-on: conditionals, battery-model
 - introduced: 2026-09-15
-- last-reviewed: 2026-09-16
-- evidence: watched the battery reach -29 % and identified correctly that the arithmetic was fine and the model was not. Wrote the lower-bound clamp. The general idea — subtraction knows nothing about physical limits, so they have to be stated — was given. Upper bound (battery cannot exceed 100) is not yet guarded; nothing adds charge yet, so it comes due if a charging or regeneration model ever appears. 2026-09-16 wrote the ceiling clamp to match their own floor clamp, and moved a misplaced clamp to sit after the move it guards once told what a clamp is for
+- last-reviewed: 2026-09-20
+- evidence: watched the battery reach -29 % and identified correctly that the arithmetic was fine and the model was not. Wrote the lower-bound clamp. The general idea — subtraction knows nothing about physical limits, so they have to be stated — was given. Upper bound (battery cannot exceed 100) is not yet guarded; nothing adds charge yet, so it comes due if a charging or regeneration model ever appears. 2026-09-16 wrote the ceiling clamp to match their own floor clamp, and moved a misplaced clamp to sit after the move it guards once told what a clamp is for 2026-09-20 wrote the descent clamp with the comparison correctly reversed — coming down, 'past the target' is the other side.
 
 ## units-in-names
 - status: introduced
@@ -707,8 +707,8 @@
 - status: practicing
 - depends-on: none
 - introduced: 2026-09-16
-- last-reviewed: 2026-09-16
-- evidence: 2026-09-17 caught one themselves for the first time, unprompted — asked whether `/*Altitude does not change when landed */` was correct on an else branch that the drone actually spends most of its flight in (battery fine, already at target altitude). Reasoned about which cases reach the branch rather than reading the words. That question also surfaced a real bug neither of us had noticed: nothing descends the drone while the battery is healthy, so with WP1 at 400 m and WP2 at 310 m it can never come down. Parked for 3.5. Earlier: 2026-09-16 met it a third time, on their own new code: the three Waypoint field comments were copied from DroneState and still read "position east of the launch point" inside a struct that describes a target, not the vehicle. Rewrote them as "target position ..." once it was pointed out. Still flagged rather than self-caught. Earlier: twice in one sitting — a ceiling clamp labelled "Altitude cannot be less than 0", copy-pasted from its floor twin, and a battery comment still claiming "about 20 minutes (1200s)" over a value changed to (100.0 / 10) for testing. The rule given: a wrong comment is worse than none, because the reader trusts it over the code. Flagged, not yet independently caught
+- last-reviewed: 2026-09-20
+- evidence: 2026-09-17 caught one themselves for the first time, unprompted — asked whether `/*Altitude does not change when landed */` was correct on an else branch that the drone actually spends most of its flight in (battery fine, already at target altitude). Reasoned about which cases reach the branch rather than reading the words. That question also surfaced a real bug neither of us had noticed: nothing descends the drone while the battery is healthy, so with WP1 at 400 m and WP2 at 310 m it can never come down. Parked for 3.5. Earlier: 2026-09-16 met it a third time, on their own new code: the three Waypoint field comments were copied from DroneState and still read "position east of the launch point" inside a struct that describes a target, not the vehicle. Rewrote them as "target position ..." once it was pointed out. Still flagged rather than self-caught. Earlier: twice in one sitting — a ceiling clamp labelled "Altitude cannot be less than 0", copy-pasted from its floor twin, and a battery comment still claiming "about 20 minutes (1200s)" over a value changed to (100.0 / 10) for testing. The rule given: a wrong comment is worse than none, because the reader trusts it over the code. Flagged, not yet independently caught 2026-09-20 asked why DESCENT_RATE_MPS could not simply be reused; when told its comment scoped it to the flat-battery case, proposed a separate CONTROLLED_DESCENT_RATE_MPS rather than widening the comment — choosing two honest names over one stretched one.
 
 ## for-loop
 - status: practicing
@@ -725,11 +725,11 @@
 - evidence: met through gcc rather than explanation — nine copies of `'(Waypoint *)&mission' is a pointer; did you mean to use '->'?` on their own mistake. Shown that an array's name in an expression collapses to a pointer to its first element, which is why `.` failed there and why `d->field` is right in tick(). Also shown that gcc's suggested fix (`->`) was wrong: the compiler diagnoses the symptom, never the intent
 
 ## array-length-is-not-stored
-- status: introduced
+- status: practicing
 - depends-on: arrays-of-structs
 - introduced: 2026-09-16
-- last-reviewed: 2026-09-16
-- evidence: asked directly and unprompted what "the array can't tell you its own length" means — a good question at the right moment. Given the contrast with Python's len()/Java's .length (a number stored beside the elements, which is what makes IndexError possible), the compile-time-only `sizeof(a)/sizeof(a[0])` escape hatch and why it dies at a function boundary, and why every C API that takes an array also takes an `n`. Connected to MISSION_WAYPOINT_COUNT as their own `n`. Not yet independently applied
+- last-reviewed: 2026-09-20
+- evidence: asked directly and unprompted what "the array can't tell you its own length" means — a good question at the right moment. Given the contrast with Python's len()/Java's .length (a number stored beside the elements, which is what makes IndexError possible), the compile-time-only `sizeof(a)/sizeof(a[0])` escape hatch and why it dies at a function boundary, and why every C API that takes an array also takes an `n`. Connected to MISSION_WAYPOINT_COUNT as their own `n`. Not yet independently applied 2026-09-20 reached for sizeof(mission) / sizeof(mission[0]) unprompted to bound the waypoint index — the correct idiom, though it duplicated the existing MISSION_WAYPOINT_COUNT; dropped it for the named constant once the two-sources-of-truth problem was named.
 
 ## declaration-vs-definition
 - status: practicing
@@ -800,3 +800,24 @@
 - introduced: 2026-09-17
 - last-reviewed: 2026-09-17
 - evidence: task 3.4 opened on the design problem rather than the maths — tick() could not see the mission, so its signature had to grow. Named the parameter type `Waypoint *` unaided and, asked separately, reasoned out const correctly. Then fixed the call site in main to match. The wider idea (a function's parameters are its whole view of the world, and widening that view is a deliberate decision) was demonstrated in one instance, not yet stated back
+
+## loop-control-break
+- status: practicing
+- depends-on: main-loop, conditionals
+- introduced: 2026-09-20
+- last-reviewed: 2026-09-20
+- evidence: 2026-09-20 first met break as the way an infinite while(1) stops. Omitted it on the first attempt, then predicted correctly what the next tick would do without it — use current_wp 3 and read outside the array — and added it. The mission now ends rather than flying to a waypoint that does not exist.
+
+## off-by-one-errors
+- status: practicing
+- depends-on: undefined-behaviour, conditionals
+- introduced: 2026-09-20
+- last-reviewed: 2026-09-20
+- evidence: 2026-09-20 wrote a bound guard as `if (current_wp != missionLength) current_wp++`, then traced it on request and stated correctly that at the last waypoint current_wp is 2, 2 != 3 is true, and it increments anyway — proving their own guard fired one step too late. Answered that the run-out check belongs after the increment, not before.
+
+## truthiness-in-c
+- status: practicing
+- depends-on: conditionals, floating-point-numbers
+- introduced: 2026-09-20
+- last-reviewed: 2026-09-20
+- evidence: 2026-09-20 wrote `d->battery_percent` as a bare condition alongside a sibling branch asking `> 0.0`. Asked what the bare name tests, answered "does it have a value?" — close, but the rule is zero is false and anything else is true, so it means != 0. Then applied it correctly: asked which branch would think a battery reading -5.0 still had power, answered the descent branch. Fixed both branches to ask the same question.

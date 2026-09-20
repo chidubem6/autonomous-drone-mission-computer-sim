@@ -17,10 +17,18 @@
 #define DRAIN_RATE_PCT_PER_S (100.0 / 1200)
 
 /* Descent rate once the battery is flat, in metres per second. */
-#define DESCENT_RATE_MPS 1.0
+#define DESCENT_RATE_MPS 5.0
+
+/* How fast the drone descends on purpose, to reach a waypoint lower than
+   where it currently is, in metres per second. Commanded, so it is slower
+   and gentler than the powerless sink above. */
+#define CONTROLLED_DESCENT_RATE_MPS 2.5
 
 /* How fast the drone flies toward a waypoint, in metres per second. */
 #define CRUISE_SPEED_MPS 10.0
+
+/* How close to a waypoint counts as arrived, in metres. */
+#define ARRIVAL_RADIUS_M 5
 
 
 /* How many waypoints the mission has. An array does not remember its own
@@ -85,16 +93,16 @@ void tick(DroneState *d, const Waypoint *target, double dt) {
         d->heading_deg = target_bearing;
         d->speed_mps = CRUISE_SPEED_MPS;
 
-        /* TODO(you): convert d->heading_deg into radians. This is the exact
+        /* Convert d->heading_deg into radians. This is the exact
            inverse of the conversion you wrote inside bearing_to(). */
         double heading_radians = d->heading_deg * (M_PI / 180.0);
 
 
-        /* TODO(you): move east. Add (speed * dt) times the east share
+        /* Move east. Add (speed * dt) times the east share
            to d->x_m. */
         d->x_m += (d->speed_mps * dt) * sin(heading_radians) ;
 
-        /* TODO(you): move north, the same way, into d->y_m. */
+        /* Move north, the same way, into d->y_m. */
         d->y_m += d->speed_mps * dt * cos(heading_radians);
 
     } else {
@@ -116,9 +124,18 @@ void tick(DroneState *d, const Waypoint *target, double dt) {
         d->altitude_m += CLIMB_RATE_MPS * dt;
 
         /* Altitude should not be above target altitude. */
-        if (d->altitude_m >  target->altitude_m) {
+        if (d->altitude_m > target->altitude_m) {
             d->altitude_m = target->altitude_m;
         }
+   
+    } else if (d->battery_percent > 0.0 && d->altitude_m > target->altitude_m) {
+        d->altitude_m -= CONTROLLED_DESCENT_RATE_MPS * dt;
+
+        /* Altitude should not be below target altitude. */
+        if (d->altitude_m < target->altitude_m) {
+            d->altitude_m = target->altitude_m;
+        }
+
     } else {
         /*Altitude is already where it should be - either holding at the target altitude
         or on the ground */
@@ -137,19 +154,18 @@ int main(void) {
 
     /* The mission: the targets to fly to, in order. */
     Waypoint mission[MISSION_WAYPOINT_COUNT] = {
-        {.x_m = 10, .y_m = 40, .altitude_m = 200},
-           {.x_m = 50, .y_m = 25, .altitude_m = 400},
-           {.x_m = 95, .y_m = 75, .altitude_m = 310},
+        {.x_m = 10, .y_m = 40, .altitude_m = 12},
+           {.x_m = 50, .y_m = 25, .altitude_m = 20},
+           {.x_m = 95, .y_m = 75, .altitude_m = 8},
 
     };
 
-    /* Which waypoint we are flying to. Advancing this is task 3.5. */
     int current_wp = 0;
 
     printf("DRONE-01 online\n");
 
     /* Announce the mission before flying it. */
-    printf("MISSION %d waypoints\n", MISSION_WAYPOINT_COUNT);
+    printf("MISSION %d WAYPOINTS\n", MISSION_WAYPOINT_COUNT);
     for (int i = 0; i < MISSION_WAYPOINT_COUNT; i++) {
         printf("WP%d   x %5.1f   y %5.1f   alt %4.1f\n", i, mission[i].x_m, mission[i].y_m, mission[i].altitude_m);
 
@@ -161,6 +177,20 @@ int main(void) {
         tick(&drone, &mission[current_wp], TICK_S);
         print_state(&drone);
         printf("   -> WP%d   %6.1f m   BRG %5.1f deg\n", current_wp, distance_to(&drone, &mission[current_wp]), bearing_to(&drone, &mission[current_wp]));
+
+        /* Arrival: close enough to call this waypoint reached? */
+        if (distance_to(&drone, &mission[current_wp]) <= ARRIVAL_RADIUS_M) {
+            printf("REACHED WP%d\n", current_wp);
+
+            current_wp++;
+
+            if (current_wp == MISSION_WAYPOINT_COUNT) {
+                printf("MISSION COMPLETE\n");
+                break;
+            } 
+
+        }
+
         usleep(TICK_S * 1000000);
     }
 

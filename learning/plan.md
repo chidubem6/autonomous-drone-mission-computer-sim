@@ -40,8 +40,9 @@
 - [x] 3.2 How far to go: straight-line distance from the drone to the current waypoint
 - [x] 3.3 Which way to go: the direction to the waypoint, and the heading in degrees
 - [x] 3.4 Flying it: move along that direction every tick at cruise speed
-- [ ] 3.5 Arrival: a "close enough" threshold, advancing to the next waypoint, announcing each one
-      - known gap found in 3.4: nothing descends the drone while the battery is healthy, so a waypoint lower than the previous one is unreachable (WP1 at 400 m, WP2 at 310 m). Fix here.
+- [x] 3.5 Arrival: a "close enough" threshold, advancing to the next waypoint, announcing each one
+      - the 3.4 descent gap is fixed: a fourth altitude branch descends at CONTROLLED_DESCENT_RATE_MPS when the battery is healthy and the drone is above its target, clamped so one tick cannot overshoot downward.
+      - known gap found in 3.5: arrival is horizontal only, and the climb rate cannot keep up with the leg lengths — at 2 m/s over a 41 m leg flown at 10 m/s the drone gains 8 m, so the original 200/400/310 m waypoints were unreachable by two orders of magnitude. Altitudes were reduced to 12/20/8 m so the mission is coherent and the descent branch is observable. Decide in section 4 whether to keep short legs with low altitudes, or spread waypoints to realistic kilometre-scale distances and speed simulated time up.
 - [ ] 3.6 Flight modes: an enum and the state machine that runs TAKEOFF -> NAVIGATE -> COMPLETE
 
 ### 4. Proving it's right  [ ] not started
