@@ -17,7 +17,7 @@
 #define DRAIN_RATE_PCT_PER_S (100.0 / 1200)
 
 /* Descent rate once the battery is flat, in metres per second. */
-#define DESCENT_RATE_MPS 1
+#define DESCENT_RATE_MPS 1.0
 
 /* How fast the drone flies toward a waypoint, in metres per second. */
 #define CRUISE_SPEED_MPS 10.0
