@@ -10,20 +10,18 @@
 #include "../src/drone.h"
 
 int main(void) {
-    /* TODO(you): a drone in the state your claim is actually about.
-       {0} gives you a flat battery, which is the wrong situation. */
+    /* Initialise a drone with 100% battery and set to 0 on every other field */
     DroneState d = {.battery_percent = 100,};
 
     Waypoint w = {0};
 
-    /* TODO(you): the battery level before the tick. You cannot claim it
-       went down without holding on to what it was. */
+    /* "Went down" is a claim about two moments, so the first one is kept. */
     double battery_before = d.battery_percent;
 
 
     tick(&d, &w, 1.0);
 
-    /* TODO(you): the claim, as an assert. */
+    /* CLAIM: one tick of powered flight costs battery. */
     assert(battery_before > d.battery_percent);
 
 
