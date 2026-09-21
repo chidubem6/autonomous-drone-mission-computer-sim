@@ -61,6 +61,33 @@
 ### 4. Proving it's right  [ ] not started
 **Deliverable:** `make test` runs the assertions and prints all-pass — including "east at 10 m/s for 1 second lands at x=10".
 **Concepts:** assert, test-program, make-targets, edge-cases, regression-testing, deterministic-simulation
+**Format trial (section 4 only, agreed 2026-09-20):** learner proposes the approach FIRST, before any guidance on how.
+Each task opens with what it must achieve and nothing about how; the learner says how they would do it; only then does the
+lesson say what it would have done, and the two get compared. Gaps in a proposal are surfaced by QUESTIONS that walk the
+learner into them, never by naming them outright — and never by letting a known-broken design ship (learner's amendment,
+same day: "can you not let me miss a test suite but rather prompt my thinking instead"). Questions point at the territory,
+not the answer; the learner must be able to get them wrong. Precondition: a proposal is on the table before any prompting.
+Reason: the learner named the real gap — "youre telling me what to do and im doing it but how do i know i have to do those
+things" — judgment is built by consequences, not by instruction. Review at the end of section 4 and decide whether to keep it.
+**Tasks:** (stated as outcomes only — the how is the learner's to propose)
+- [x] 4.1 `make test` exists: it produces a program, separate from the engine, that checks one claim about the engine's
+      behaviour and says out loud whether the claim held.
+      - the real work turned out to be structural, not about testing: `src/drone.c` held both the engine and `main()`, so
+        nothing could use the engine without being the drone. Split into `src/drone.c` (capabilities) and `src/main.c`
+        (decisions); `drone.h` now declares the four engine functions. Binaries moved to `build/` on the learner's own
+        argument that a per-binary `clean` goes stale — it already had.
+      - the section-3 prediction came true on the first run: `tick()`'s `printf("MODE NAVIGATE")` fires inside the test,
+        so `make test` prints engine noise that has nothing to do with the claim. Still due in section 5.
+      - the test asserts `battery_before > d.battery_percent` and was verified by deliberately commenting out the drain
+        line and watching it fail, then restoring it.
+- [ ] 4.2 The section's headline claim is checked: "flying east at 10 m/s for 1 second lands the drone at x = 10" —
+      and the test is fair, meaning it would actually fail if the engine were wrong.
+- [ ] 4.3 The boundaries are checked: the places where the engine is most likely to be wrong are named and asserted,
+      not the places where it is obviously right.
+- [ ] 4.4 Every mode the drone can be in has a name. A drone sinking with a dead battery no longer reports
+      MODE_NAVIGATE, and the change is proven safe by tests that were passing before it and still pass after.
+- [ ] 4.5 One command, whole suite, all-pass: every claim from 4.1–4.4 runs on every `make test`, and a broken engine
+      is caught by it rather than by reading the terminal.
 
 ### 5. The contract  [ ] not started
 **Deliverable:** the engine's output becomes structured data — one JSON object per tick, readable by a human and by a machine.

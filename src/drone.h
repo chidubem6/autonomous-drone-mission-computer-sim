@@ -35,4 +35,15 @@ typedef struct {
     double altitude_m; /* target altitude above the launch point, in metres */
 } Waypoint;
 
+/*
+ * The engine's functions, declared for anyone who includes this header.
+ * These are declarations only — the code itself stays in drone.c, and the
+ * linker is what connects the two.
+ */
+
+void tick(DroneState *d, const Waypoint *target, double dt);
+double bearing_to(const DroneState *d, const Waypoint *w);
+double distance_to(const DroneState *d, const Waypoint *w);
+void print_state(const DroneState *d);
+
 #endif /* DRONE_H */

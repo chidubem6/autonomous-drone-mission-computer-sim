@@ -42,8 +42,8 @@
 - status: practicing
 - depends-on: struct
 - introduced: 2026-09-14
-- last-reviewed: 2026-09-20
-- evidence: wrote src/drone.h and included it from drone.c with quotes rather than angle brackets, after the "next to this file" vs "system directories" distinction. 2026-09-20 review: correctly placed a new type in drone.h rather than drone.c, but could not say why - "it seems like it belongs there, like its just good practice". The rule (a header holds what more than one .c file must agree on; the .c holds the private machinery) was given again, grounded in section 4's test program needing DroneState. Right answer, no rule behind it yet - re-review
+- last-reviewed: 2026-09-21
+- evidence: 2026-09-21 asked three times, in three different framings, why headers exist when drone.c can be linked from anywhere - the question that had to be answered from the compiler's side (it compiles one .c file alone and can never look at another) rather than the linker's. wrote src/drone.h and included it from drone.c with quotes rather than angle brackets, after the "next to this file" vs "system directories" distinction. 2026-09-20 review: correctly placed a new type in drone.h rather than drone.c, but could not say why - "it seems like it belongs there, like its just good practice". The rule (a header holds what more than one .c file must agree on; the .c holds the private machinery) was given again, grounded in section 4's test program needing DroneState. Right answer, no rule behind it yet - re-review
 
 ## preprocessor
 - status: practicing
@@ -105,8 +105,8 @@
 - status: practicing
 - depends-on: compiling-c
 - introduced: 2026-09-14
-- last-reviewed: 2026-09-16
-- evidence: 2026-09-16 the link stage stopped being a name on a list and became an error they had predicted: asked whether `make` would succeed with math.h included and sqrt called, answered "no it wont because sqrt doesnt have a defintion" before running it. Then read the failure themselves and saw it came from /usr/bin/ld, a different program from gcc, after stages 1-3 had all succeeded. Earlier: predicted a .obj file would be left behind after compiling; corrected to the four stages (preprocess, compile, assemble, link) that gcc runs in one command, deleting the intermediate. Object files reappear deliberately in task 1.5
+- last-reviewed: 2026-09-21
+- evidence: 2026-09-21 built the model unprompted and in his own words - "we compile one .c file. in that c file we make it object with holes like i expect tick to be filled in with this shape. linker will fill these in with the other file that defines it." Predicted correctly that `gcc -c` on a file calling an undeclared tick would still succeed, then predicted the exact nm symbols before running - U for tick, T for main - and got both right. Also predicted that adding the declaration to drone.h would silence the warning while leaving U tick untouched. Needed one correction: said main.o's holes are filled by drone.c's holes rather than its definitions. 2026-09-16 the link stage stopped being a name on a list and became an error they had predicted: asked whether `make` would succeed with math.h included and sqrt called, answered "no it wont because sqrt doesnt have a defintion" before running it. Then read the failure themselves and saw it came from /usr/bin/ld, a different program from gcc, after stages 1-3 had all succeeded. Earlier: predicted a .obj file would be left behind after compiling; corrected to the four stages (preprocess, compile, assemble, link) that gcc runs in one command, deleting the intermediate. Object files reappear deliberately in task 1.5
 
 ## compiler-warnings
 - status: practicing
@@ -126,22 +126,22 @@
 - status: practicing
 - depends-on: compiling-c
 - introduced: 2026-09-15
-- last-reviewed: 2026-09-15
-- evidence: wrote the first rule themselves after a worked example in another domain. First prerequisite list named only src/drone.c; when asked about the header, reasoned correctly that #include pastes drone.h in regardless — true of gcc, but missing that gcc is never invited if make sees no change. Then predicted the conditional sharply — "make will run the gcc if drone.h was in the src file list" — and confirmed it with touch src/drone.h: 'drone' is up to date, followed by a real rebuild once the header was declared. Asked two good structural questions unprompted: where Makefile comes from (program vs file you author), and how make tracks changes (it does not — it reads filesystem mtimes fresh each run). Left the <file> placeholder and three TODO blocks in on the first cleanup pass
+- last-reviewed: 2026-09-21
+- evidence: 2026-09-21 rewrote the whole file for the two-program split: both .c files on the drone rule, a real-file target for the test binary, a phony test action that runs it, and rm -rf for a directory. Copy-paste left src/main.c on the test's gcc line at one point - a test that would have silently built and run the drone instead. wrote the first rule themselves after a worked example in another domain. First prerequisite list named only src/drone.c; when asked about the header, reasoned correctly that #include pastes drone.h in regardless — true of gcc, but missing that gcc is never invited if make sees no change. Then predicted the conditional sharply — "make will run the gcc if drone.h was in the src file list" — and confirmed it with touch src/drone.h: 'drone' is up to date, followed by a real rebuild once the header was declared. Asked two good structural questions unprompted: where Makefile comes from (program vs file you author), and how make tracks changes (it does not — it reads filesystem mtimes fresh each run). Left the <file> placeholder and three TODO blocks in on the first cleanup pass
 
 ## file-timestamps
 - status: practicing
 - depends-on: makefile
 - introduced: 2026-09-15
-- last-reviewed: 2026-09-15
-- evidence: first read "timestamp" as metadata about build reproducibility and said so plainly; after the correction to last-modified time, read the three real mtimes off ls --time-style=full-iso and saw drone sitting 42 seconds newer than drone.c. Met touch as an instrument for changing mtime without changing content
+- last-reviewed: 2026-09-21
+- evidence: 2026-09-21 predicted that `touch src/drone.c` would make gcc re-run and named the mechanism - "it cchecks timestamps?" - for a file whose contents had not changed by a single byte. first read "timestamp" as metadata about build reproducibility and said so plainly; after the correction to last-modified time, read the three real mtimes off ls --time-style=full-iso and saw drone sitting 42 seconds newer than drone.c. Met touch as an instrument for changing mtime without changing content
 
 ## make-targets
 - status: practicing
 - depends-on: makefile
 - introduced: 2026-09-15
-- last-reviewed: 2026-09-15
-- evidence: asked what was actually wrong with a recipe that both builds and runs, which earned the concrete answers (hostage terminal, a Docker RUN make that never exits, and a target being a noun). The run: drone dependency chain was supplied after a stuck watch, not derived; clean and .PHONY: run clean were written unaided. Predicted correctly that gcc runs exactly once across make clean / make / make run, and why. Then tested the phony-vs-file distinction unprompted — three make runs in a row all fired, two bare makes in a row both said up to date
+- last-reviewed: 2026-09-21
+- evidence: 2026-09-21 resolved his own opening conditional: after naming the binary test_drone he said `test` belongs in .PHONY because "we do not create a binary called test" - the rule applied to a design decision he had made himself hours later. 2026-09-20 review passed cold: asked whether a new `test` target belongs in `.PHONY`, stated the general rule rather than the instance — "if test is a file we are creating" it stays out, "if test is not a file in my directory but rather an action it should go in .phony" — and left the answer conditional on a design decision not yet made. Earlier: asked what was actually wrong with a recipe that both builds and runs, which earned the concrete answers (hostage terminal, a Docker RUN make that never exits, and a target being a noun). The run: drone dependency chain was supplied after a stuck watch, not derived; clean and .PHONY: run clean were written unaided. Predicted correctly that gcc runs exactly once across make clean / make / make run, and why. Then tested the phony-vs-file distinction unprompted — three make runs in a row all fired, two bare makes in a row both said up to date
 
 ## simulation-tick
 - status: practicing
@@ -242,18 +242,18 @@
 - evidence: explained during the testing decision — a test is a claim about behaviour written down so a machine can check it
 
 ## assert
-- status: seed
+- status: practicing
 - depends-on: test-is-a-claim
-- introduced: —
-- last-reviewed: —
-- evidence: —
+- introduced: 2026-09-21
+- last-reviewed: 2026-09-21
+- evidence: 2026-09-21 chose his own first claim in English - "after a tick, battery should go down" - then wrote it unaided as assert(battery_before > d.battery_percent), having first set up a drone with .battery_percent = 100 because {0} was the wrong situation to test. Predicted the failure shape before breaking the engine: "maybe an error. printtf all test passed doest get printed" - both correct. —
 
 ## test-program
-- status: seed
+- status: practicing
 - depends-on: test-is-a-claim
-- introduced: —
-- last-reviewed: —
-- evidence: —
+- introduced: 2026-09-21
+- last-reviewed: 2026-09-21
+- evidence: 2026-09-21 proposed the shape before any guidance: a tests/ directory, make test compiling and running a program, pass/fail output. Chose a single test file over per-aspect files once told the split pays off only when running a subset saves time. Reasoned out unprompted that the test must link the real engine rather than a copy - when asked what a duplicated tick would report after a later bugfix, saw that the test goes stale. —
 
 ## edge-cases
 - status: seed
@@ -546,8 +546,8 @@
 - status: practicing
 - depends-on: git-staging-area
 - introduced: 2026-09-14
-- last-reviewed: 2026-09-14
-- evidence: filled in the `*.exe` pattern correctly by generalising from the `*.o` line; needed a second pass to remove the stale TODO block, which prompted a note about leaving finished instructions in files. Later the same day predicted correctly that the new Linux binary would show as untracked because *.exe could not match it, then replaced the dead rule with /drone
+- last-reviewed: 2026-09-21
+- evidence: 2026-09-21 replaced two per-binary lines with one directory line, on his own argument that the per-binary list goes stale - which it had, silently, minutes earlier when test_drone escaped both .gitignore and clean. filled in the `*.exe` pattern correctly by generalising from the `*.o` line; needed a second pass to remove the stale TODO block, which prompted a note about leaving finished instructions in files. Later the same day predicted correctly that the new Linux binary would show as untracked because *.exe could not match it, then replaced the dead rule with /drone
 
 ## line-endings-lf-crlf
 - status: introduced
@@ -592,11 +592,11 @@
 - evidence: walked all eight stack decisions and approved the nine-section sequence
 
 ## reading-a-diff
-- status: seed
+- status: practicing
 - depends-on: git-commit
-- introduced: —
-- last-reviewed: —
-- evidence: —
+- introduced: 2026-09-21
+- last-reviewed: 2026-09-21
+- evidence: 2026-09-21 asked outright how to read a diff, then located the hunk where main() left drone.c and read its header - @@ -151,59 +143,3 @@ - correctly identifying it as 56 lines removed. Was stuck inside the pager without knowing it. —
 
 ## agent-memory-claude-md
 - status: seed
@@ -648,11 +648,11 @@
 - evidence: arrived via a real build failure. Met the two-rulebooks split — ISO C defines the language and knows nothing of clocks or an OS, POSIX defines the Unix system calls — and why -std=c11 is a promise that makes glibc hide every non-ISO declaration. Explanation was requested twice and delivered; the learner supplied the conditional-compilation half of it themselves. Not yet reasoned about independently
 
 ## implicit-function-declaration
-- status: introduced
+- status: practicing
 - depends-on: compiler-warnings
 - introduced: 2026-09-15
-- last-reviewed: 2026-09-15
-- evidence: hit it for real on usleep. Learned that pre-1999 C allowed calling an undeclared function and assumed an int return — the same family of silent-wrong-guess problem as the earlier %d-on-a-double break — and that -Werror is what turns it from a scrollable warning into a stop
+- last-reviewed: 2026-09-21
+- evidence: 2026-09-21 predicted the failure correctly before compiling - "undeclared or undefined" - naming both stages in one breath, then watched gcc warn and produce a valid object file anyway rather than refusing. hit it for real on usleep. Learned that pre-1999 C allowed calling an undeclared function and assumed an int return — the same family of silent-wrong-guess problem as the earlier %d-on-a-double break — and that -Werror is what turns it from a scrollable warning into a stop
 
 ## git-amend
 - status: introduced
@@ -735,15 +735,15 @@
 - status: practicing
 - depends-on: header-files
 - introduced: 2026-09-16
-- last-reviewed: 2026-09-16
-- evidence: task 3.2, and the strongest prediction of the journey so far. Told only that math.h holds a declaration — "sqrt takes a double and returns a double" — and asked whether make would succeed, answered unprompted: "no it wont because sqr doesnt have a defintion". Honest about the second half too ("im not sure where sqrt would have to come from"), which is what made the linker explanation land on a real gap rather than a hypothetical one
+- last-reviewed: 2026-09-21
+- evidence: 2026-09-21 wrote all four engine prototypes into drone.h and found print_state and distance_to himself from the rule "does anything outside this file call it". Took three attempts on the syntax - `{`, then `{}`, then `;` - the empty-body form being the instructive miss, since `{}` is still a definition. Asked unprompted why tick could not simply be extracted into the header, which is the multiple-definition trap. task 3.2, and the strongest prediction of the journey so far. Told only that math.h holds a declaration — "sqrt takes a double and returns a double" — and asked whether make would succeed, answered unprompted: "no it wont because sqr doesnt have a defintion". Honest about the second half too ("im not sure where sqrt would have to come from"), which is what made the linker explanation land on a real gap rather than a hypothetical one
 
 ## linking-libraries
-- status: introduced
+- status: practicing
 - depends-on: declaration-vs-definition
 - introduced: 2026-09-16
-- last-reviewed: 2026-09-16
-- evidence: task 3.2. Hit `undefined reference to sqrt` on their own build and read it as a link-stage failure. Given the rest: that sqrt's compiled code lives in libm, that gcc links libc automatically but not libm, that `-lm` means "link the library named m", and that it must come after the source file because ld resolves left to right and discards a library it has no outstanding references for. The fix and the ordering rule were both dictated, not derived — comes due again the first time a third-party library appears (section 6, npm)
+- last-reviewed: 2026-09-21
+- evidence: 2026-09-21 answered cold why sqrt needs -lm but printf does not: "both are in the c library but math isnt linked by default". task 3.2. Hit `undefined reference to sqrt` on their own build and read it as a link-stage failure. Given the rest: that sqrt's compiled code lives in libm, that gcc links libc automatically but not libm, that `-lm` means "link the library named m", and that it must come after the source file because ld resolves left to right and discards a library it has no outstanding references for. The fix and the ordering rule were both dictated, not derived — comes due again the first time a third-party library appears (section 6, npm)
 
 ## address-of-array-element
 - status: practicing
@@ -849,3 +849,52 @@
 - introduced: 2026-09-20
 - last-reviewed: 2026-09-20
 - evidence: asked what "a small smell" meant after being told the printf inside tick() was one. Given the definition (not a bug; a hint the design is off) and the concrete cost here: tick() now does two jobs, so section 4's test program cannot call it without text spraying out, and section 5's JSON change has to touch simulation code that did not change
+
+## object-files-vs-executables
+- status: practicing
+- depends-on: compilation-stages
+- introduced: 2026-09-21
+- last-reviewed: 2026-09-21
+- evidence: asked twice, in different words, whether an object file is the same as an executable - first as "we get an object file called test which is executable... is that an object file tho", later as a direct question. Saw the answer in his own nm output: the .o carried unfilled U entries with no address, and `file` reports it as relocatable rather than executable.
+
+## compile-time-vs-run-time
+- status: practicing
+- depends-on: compilation-stages, assert
+- introduced: 2026-09-21
+- last-reviewed: 2026-09-21
+- evidence: after commenting out the battery drain and watching the assertion fire, asked "was it the compiler that threw" - the right question, and the one that separates today's compile-time and link-time failures from the first run-time failure of the project. gcc had accepted the broken engine without a single warning under -Werror.
+
+## interface-vs-implementation
+- status: practicing
+- depends-on: header-files, declaration-vs-definition
+- introduced: 2026-09-21
+- last-reviewed: 2026-09-21
+- evidence: pushed on this repeatedly until it landed - "why do we have header files if we we also allow files like drone.c to be called from different locations", "why not define enum in drone.c", "why not just extratc tick from drone.c". The resolution he was reaching for: drone.h is the engine's public description, drone.c its code, and he has been relying on exactly that split every time he writes #include <stdio.h> without ever reading printf's source.
+
+## engine-vs-program-separation
+- status: practicing
+- depends-on: interface-vs-implementation
+- introduced: 2026-09-21
+- last-reviewed: 2026-09-21
+- evidence: proposed the split himself once the multiple-definition error appeared - "the main function in drone.c should be extracted and call on the functinos that are currently in drone.c" - and worked out that main's locals move with main. Sorted the eight constants across the two files correctly, though by an "all drones vs this instance" rule rather than the decisive one (a constant lives where the code using it lives); said honestly "im not sure how to reason it. what belogns in drone.c and main.c" before getting TICK_S right anyway.
+
+## make-dependency-graph
+- status: practicing
+- depends-on: make-targets
+- introduced: 2026-09-21
+- last-reviewed: 2026-09-21
+- evidence: named the gap himself - "i thought make test would fial because we are watching for build/test_drone but we donthave that yet" - the assumption that a prerequisite is a precondition to check rather than a goal to satisfy. His own three lines of make output were the proof: two recipes ran, bottom-up. On the second run he correctly said only ./build/test_drone would execute, but explained it by existence alone, missing both the timestamp comparison and the phony half.
+
+## makefile-variables
+- status: introduced
+- depends-on: makefile
+- introduced: 2026-09-21
+- last-reviewed: 2026-09-21
+- evidence: used BUILD := build throughout his own rules after being shown one worked example. Has not yet written one himself.
+
+## build-artifacts-directory
+- status: practicing
+- depends-on: gitignore, makefile
+- introduced: 2026-09-21
+- last-reviewed: 2026-09-21
+- evidence: argued for it against a recommendation to defer, and won on evidence rather than preference - "what if we do clean on build/drone instead of drone test_Drone?" - pointing at a staleness failure that had already happened in front of him rather than one he imagined.

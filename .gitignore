@@ -6,4 +6,5 @@
 
 
 # Linux executable of drone.c
-/drone
+/build
+
