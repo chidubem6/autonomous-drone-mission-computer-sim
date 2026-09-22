@@ -80,8 +80,26 @@ things" — judgment is built by consequences, not by instruction. Review at the
         so `make test` prints engine noise that has nothing to do with the claim. Still due in section 5.
       - the test asserts `battery_before > d.battery_percent` and was verified by deliberately commenting out the drain
         line and watching it fail, then restoring it.
-- [ ] 4.2 The section's headline claim is checked: "flying east at 10 m/s for 1 second lands the drone at x = 10" —
+- [x] 4.2 The section's headline claim is checked: "flying east at 10 m/s for 1 second lands the drone at x = 10" —
       and the test is fair, meaning it would actually fail if the engine were wrong.
+      - the proposal was right in shape on the first pass. The two ways this test fails silently on a CORRECT engine were
+        both found by the learner reading tick(): heading_deg and speed_mps are overwritten inside tick(), so the waypoint
+        is the steering wheel; and the TAKEOFF -> NAVIGATE transition sits at the END of tick(), so the first tick of a
+        zero-initialised drone never moves. Fixed by setting .mode = MODE_NAVIGATE in the test's own drone.
+      - fairness was defined as "would fail if the engine were wrong" and then earned twice: the waypoint was moved from
+        x = 10 to x = 100 so a target-snapping engine cannot pass, and CRUISE_SPEED_MPS was dropped to 5.0 to watch the
+        assertion abort before being restored.
+      - the == trap landed for real: assert(y_m == 0) failed on a correct engine because cos of a double approximation of
+        pi/2 leaves 6.1e-16 m of drift. Both asserts now use fabs(actual - expected) < TOLERANCE_M, 1e-9. The x assert had
+        been passing on a geometric accident (sin is flat at its peak), which is exactly the green-today-red-Tuesday test.
+        This closes the section-3 note about == comparisons — but note the engine's own transition rule at drone.c:141
+        still compares two doubles with >=, and is still only safe because the climb clamp assigns the exact target value.
+      - the engine noise predicted in section 3 is now visible on every run: `make test` prints MODE NAVIGATE from claim 1's
+        drone before any test output. Still due in section 5.
+      - deferred: the tolerance reasoning was supplied, not produced. Worth re-asking cold in a later lesson.
+      - decided 2026-09-22: the printf inside tick() stays until section 5. The learner was offered a short task to move
+        the transition announcement out to main.c before 4.3, weighed it against section 5's contract work, and chose to keep
+        the fix where the reason for it lives. Tasks 4.3-4.5 run with MODE NAVIGATE printing into the test output.
 - [ ] 4.3 The boundaries are checked: the places where the engine is most likely to be wrong are named and asserted,
       not the places where it is obviously right.
 - [ ] 4.4 Every mode the drone can be in has a name. A drone sinking with a dead battery no longer reports

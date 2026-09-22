@@ -91,8 +91,8 @@
 - status: practicing
 - depends-on: none
 - introduced: 2026-09-15
-- last-reviewed: 2026-09-20
-- evidence: met doubles as the type for every physical quantity in DroneState, and the reason integers were wrong for a 0.05 s tick. 2026-09-20 met NaN for the first time via the ghost experiment, then answered the follow-up correctly: asked what a clamp written as if (d->altitude_m > target->altitude_m) does when altitude is NaN, said the branch does not fire because the comparison is false. Was shown the sharper version - every branch in the chain declines and the empty hold else catches it, so the drone reports holding steady at an altitude of NaN. The general rule (NaN makes every comparison false, so guards fail open) landed; isnan() parked for section 4
+- last-reviewed: 2026-09-22
+- evidence: met doubles as the type for every physical quantity in DroneState, and the reason integers were wrong for a 0.05 s tick. 2026-09-20 met NaN for the first time via the ghost experiment, then answered the follow-up correctly: asked what a clamp written as if (d->altitude_m > target->altitude_m) does when altitude is NaN, said the branch does not fire because the comparison is false. Was shown the sharper version - every branch in the chain declines and the empty hold else catches it, so the drone reports holding steady at an altitude of NaN. The general rule (NaN makes every comparison false, so guards fail open) landed; isnan() parked for section 4. 2026-09-22 saw the storage approximation produce a visibly wrong answer in his own test and asked for it in plain terms - got the kitchen-scale framing: a stored decimal is the nearest value the hardware can represent, so every arithmetic step can nudge the answer by a sliver
 
 ## compiling-c
 - status: practicing
@@ -186,11 +186,11 @@
 - evidence: derived the drain rate from a hardware spec rather than inventing it — given "a small quadcopter flies about 20 minutes", answered 0.083 %/s and showed the working (100 / 1200) unaided. Wrote `d->battery_percent -= DRAIN_RATE_PCT_PER_S * dt;` from the altitude line. Predicted correctly and unprompted that an unclamped battery would go negative, at about -25 % after 25 minutes, and later that a flat battery would not stop the climb because nothing connects the two
 
 ## deterministic-simulation
-- status: seed
+- status: introduced
 - depends-on: fixed-timestep
-- introduced: —
-- last-reviewed: —
-- evidence: —
+- introduced: 2026-09-22
+- last-reviewed: 2026-09-22
+- evidence: named while choosing the test tolerance - the engine has no randomness and no sensors, so 10 m/s for 1 s is exactly 10 m by hand, which is why any difference above binary rounding means the engine is wrong rather than imprecise. Explained to him; not yet demonstrated by him
 
 ## tick-rate-vs-update-rate
 - status: introduced
@@ -245,8 +245,8 @@
 - status: practicing
 - depends-on: test-is-a-claim
 - introduced: 2026-09-21
-- last-reviewed: 2026-09-21
-- evidence: 2026-09-21 chose his own first claim in English - "after a tick, battery should go down" - then wrote it unaided as assert(battery_before > d.battery_percent), having first set up a drone with .battery_percent = 100 because {0} was the wrong situation to test. Predicted the failure shape before breaking the engine: "maybe an error. printtf all test passed doest get printed" - both correct. —
+- last-reviewed: 2026-09-22
+- evidence: 2026-09-21 chose his own first claim in English - "after a tick, battery should go down" - then wrote it unaided as assert(battery_before > d.battery_percent), having first set up a drone with .battery_percent = 100 because {0} was the wrong situation to test. Predicted the failure shape before breaking the engine: "maybe an error. printtf all test passed doest get printed" - both correct. 2026-09-22 wrote his second and third asserts, and read a real failure message line by line: asked what "core dumped" meant, and was walked through assert expanding to __assert_fail, which prints expression/file/line from inside his own process, then abort() raising SIGABRT, the OS reporting it, and make propagating the nonzero status
 
 ## test-program
 - status: practicing
@@ -254,6 +254,27 @@
 - introduced: 2026-09-21
 - last-reviewed: 2026-09-21
 - evidence: 2026-09-21 proposed the shape before any guidance: a tests/ directory, make test compiling and running a program, pass/fail output. Chose a single test file over per-aspect files once told the split pays off only when running a subset saves time. Reasoned out unprompted that the test must link the real engine rather than a copy - when asked what a duplicated tick would report after a later bugfix, saw that the test goes stale. —
+
+## test-fairness
+- status: practicing
+- depends-on: test-is-a-claim, assert
+- introduced: 2026-09-22
+- last-reviewed: 2026-09-22
+- evidence: 2026-09-22 asked what "fair" even means, and first guessed it meant checking that no other field changed. Given the definition - a test that would fail if the engine were wrong - he applied it himself: asked whether any wrong engine could still pass while the waypoint sat at x = 10 and the expected answer was also 10, answered "a faulty engine that keeps drones at x = 10", and moved the waypoint out to 100 so the expected value cannot be copied from the target. Then proved the finished test fair by dropping CRUISE_SPEED_MPS to 5.0, watching the assertion abort, and restoring it
+
+## test-isolation
+- status: practicing
+- depends-on: test-program
+- introduced: 2026-09-22
+- last-reviewed: 2026-09-22
+- evidence: 2026-09-22 began claim 2 by typing "d." - reaching for the drone claim 1 had already ticked. Asked what state that drone was actually in, and what would happen to claim 2 if claim 1 were later edited, he answered both correctly ("it is navigation mode. it will be in a different position if a waypoint was provided in claim 1") and declared a fresh d_nav_east / w_nav_east pair instead. Also met gcc's "redefinition of d" when the new names collided with the old, and read the accompanying note line pointing at the first definition
+
+## choosing-a-tolerance
+- status: introduced
+- depends-on: nan-and-float-comparison
+- introduced: 2026-09-22
+- last-reviewed: 2026-09-22
+- evidence: 2026-09-22 pushed back on the number three times - "should tolerance be like 0.01?", "why not just within 1 metre", "so why 1e-9" - which is the right question to ask about a magic number. Was given the two walls (far above the rounding noise floor, far below the smallest error worth catching) and the honest answer that 1e-9 is a round place to stand in a very wide safe band, not a derived value. Wrote TOLERANCE_M 1e-9 into the test himself. The reasoning was supplied rather than produced
 
 ## edge-cases
 - status: seed
@@ -529,11 +550,11 @@
 - evidence: self-reported — uses git frequently; 2026-09-14 explained unprompted that zipping the project while skipping hidden folders delivers the files but loses the history, because the repository *is* the .git folder
 
 ## git-commit
-- status: practicing
+- status: understood
 - depends-on: git-repository
 - introduced: —
-- last-reviewed: 2026-09-14
-- evidence: self-reported — uses git frequently; 2026-09-14 wrote and ran the repository's root commit, message authored themselves in the present-tense convention
+- last-reviewed: 2026-09-21
+- evidence: self-reported — uses git frequently; 2026-09-14 wrote and ran the repository's root commit, message authored themselves in the present-tense convention. 2026-09-21 spaced review after a week away, passed unprompted: a commit "gives a snapshot, something to fall back to, also gives a record of changes" — both halves, the restore point and the history
 
 ## git-staging-area
 - status: practicing
@@ -837,11 +858,11 @@
 - evidence: 2026-09-20 refused to accept the rule without the mechanism - "BUT HOW CAN ANYTHING BE IN DRONESTATE A;" - which is exactly the right place to get stuck. Needed the reframe that a declaration claims memory that already exists rather than creating fresh memory, that every byte of RAM always holds some value, and that returning from a function erases nothing. Confirmed by running the ghost experiment and seeing C-runtime leftovers in a field he never wrote to
 
 ## nan-and-float-comparison
-- status: introduced
+- status: practicing
 - depends-on: floating-point-numbers
 - introduced: 2026-09-20
-- last-reviewed: 2026-09-20
-- evidence: met NaN as a real value in his own program's output (POS -nan). Answered correctly that a NaN altitude makes a clamp's if fail, and took the point that the failure is silent rather than loud. Not yet applied: the transition rule he wrote compares two doubles with == and works only because the clamp assigns the exact target value. isnan() and tolerance comparisons parked for section 4
+- last-reviewed: 2026-09-22
+- evidence: met NaN as a real value in his own program's output (POS -nan). Answered correctly that a NaN altitude makes a clamp's if fail, and took the point that the failure is silent rather than loud. 2026-09-20: not yet applied - the transition rule he wrote compares two doubles with ==. 2026-09-22 met the == trap himself: predicted his own assert(y_m == 0) would pass ("a pass. we did not alter y"), watched it abort, then printed the value and found 6.1e-16 m of drift that never physically happened. Asked how to compare so noise passes and real errors fail, proposed the idea unprompted - "use an approximation or like a range" - and wrote both asserts as fabs(actual - expected) < TOLERANCE_M. Was shown why x survived == on a geometric accident: sin is flat at its peak so the angle error rounds away, cos sits on a slope of -1 so the same error passes straight through. Restated the cause unprompted at the end of the lesson, in his own words: decimals have "no absolute binary representation so its more of an approximation rather than a steadfast arithmetic", and the tolerance is "the cap on how far the value can drift" - accurate, and the framing his file comment now carries. Said same-day as the teaching, so it is performance rather than retention; re-ask cold
 
 ## code-smell
 - status: introduced
@@ -861,8 +882,8 @@
 - status: practicing
 - depends-on: compilation-stages, assert
 - introduced: 2026-09-21
-- last-reviewed: 2026-09-21
-- evidence: after commenting out the battery drain and watching the assertion fire, asked "was it the compiler that threw" - the right question, and the one that separates today's compile-time and link-time failures from the first run-time failure of the project. gcc had accepted the broken engine without a single warning under -Werror.
+- last-reviewed: 2026-09-22
+- evidence: after commenting out the battery drain and watching the assertion fire, asked "was it the compiler that threw" - the right question, and the one that separates today's compile-time and link-time failures from the first run-time failure of the project. gcc had accepted the broken engine without a single warning under -Werror. 2026-09-22 predicted that breaking the engine would raise "an error by the compiler"; asked at what point d.x_m actually has a value, corrected himself to run time unprompted, and asked the honest follow-up about who reports the failure.
 
 ## interface-vs-implementation
 - status: practicing
