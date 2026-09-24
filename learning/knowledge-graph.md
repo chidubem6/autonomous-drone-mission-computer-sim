@@ -77,8 +77,8 @@
 - status: practicing
 - depends-on: none
 - introduced: 2026-09-20
-- last-reviewed: 2026-09-20
-- evidence: 2026-09-20 wrote the FlightMode enum (MODE_TAKEOFF, MODE_NAVIGATE, MODE_COMPLETE), added the FlightMode mode field to DroneState, and set it explicitly in main()'s initializer. Predicted correctly, before writing any of it, that an unmentioned field would come out 0 and that 0 would mean MODE_TAKEOFF because it is listed first - and accepted that being right by accident is fragile under reordering. Asked unprompted whether a MODE_OFF was needed; was given the test (is there a situation no name describes?) and shown the real hole it exposes - a battery-flat drone still reporting MODE_NAVIGATE. Typo'd NODE_COMPLETE and fixed it once told, after being shown that the compiler would only complain later, at the use site
+- last-reviewed: 2026-09-24
+- evidence: 2026-09-20 wrote the FlightMode enum (MODE_TAKEOFF, MODE_NAVIGATE, MODE_COMPLETE), added the FlightMode mode field to DroneState, and set it explicitly in main()'s initializer. Predicted correctly, before writing any of it, that an unmentioned field would come out 0 and that 0 would mean MODE_TAKEOFF because it is listed first - and accepted that being right by accident is fragile under reordering. Asked unprompted whether a MODE_OFF was needed; was given the test (is there a situation no name describes?) and shown the real hole it exposes - a battery-flat drone still reporting MODE_NAVIGATE. Typo'd NODE_COMPLETE and fixed it once told, after being shown that the compiler would only complain later, at the use site. 2026-09-24 appended MODE_FAILSAFE at the END of the enum and dropped the count from the comment above it so it cannot go stale. Moved it to the top unprompted to test the question, saw a test fail and didn't know why. When pointed at claim 7's drone, which sets no .mode, answered correctly that it would start as 0, now MODE_FAILSAFE. Was shown that claims 3-8 depend on MODE_TAKEOFF being 0 without saying so
 
 ## printf-format
 - status: practicing
@@ -182,8 +182,8 @@
 - status: practicing
 - depends-on: delta-time
 - introduced: 2026-09-15
-- last-reviewed: 2026-09-15
-- evidence: derived the drain rate from a hardware spec rather than inventing it — given "a small quadcopter flies about 20 minutes", answered 0.083 %/s and showed the working (100 / 1200) unaided. Wrote `d->battery_percent -= DRAIN_RATE_PCT_PER_S * dt;` from the altitude line. Predicted correctly and unprompted that an unclamped battery would go negative, at about -25 % after 25 minutes, and later that a flat battery would not stop the climb because nothing connects the two
+- last-reviewed: 2026-09-24
+- evidence: derived the drain rate from a hardware spec rather than inventing it — given "a small quadcopter flies about 20 minutes", answered 0.083 %/s and showed the working (100 / 1200) unaided. Wrote `d->battery_percent -= DRAIN_RATE_PCT_PER_S * dt;` from the altitude line. Predicted correctly and unprompted that an unclamped battery would go negative, at about -25 % after 25 minutes, and later that a flat battery would not stop the climb because nothing connects the two. 2026-09-24 review (cold): time to empty from 50 % - answered "50 % / drain rate", the right shape, but did not recall the rate's value (100/1200 %/s) or turn it into a number (600 s)
 
 ## deterministic-simulation
 - status: introduced
@@ -228,11 +228,11 @@
 - evidence: 2026-09-20 computed the per-tick step unaided (0.5 m from 10 m/s x 0.05 s) and predicted that an equality test would sometimes land on zero but usually step over. First pick for the radius was 0.10 m — smaller than the step — and when walked through the 0.4 m case answered correctly that the drone would end up 0.1 m past, i.e. never inside the circle. Corrected to 5. Wrote the arrival condition itself: distance_to(&drone, &mission[current_wp]) <= ARRIVAL_RADIUS_M.
 
 ## finite-state-machine
-- status: practicing
+- status: understood
 - depends-on: enums
 - introduced: 2026-09-20
-- last-reviewed: 2026-09-20
-- evidence: motivation earned the hard way on 2026-09-16, before the concept was taught. Two separate bugs in section 2.5 came from the same cause - the drone's situation was inferred from number combinations rather than stored - and the learner diagnosed both by tracing the chain by hand. 2026-09-20 built it: asked what MODE_TAKEOFF should do, answered the whole design unprompted - rise to target altitude, do not move forward, transition on reaching it. Wrote the mode gate on the navigation branch (d->battery_percent > 0.0 && d->mode == MODE_NAVIGATE) and the transition rule at the end of tick(). Then wrote the main() half ahead of the scaffolding being offered: while (drone.mode != MODE_COMPLETE) replacing while(1), and drone.mode = MODE_COMPLETE replacing break. Mission now flies TAKEOFF -> NAVIGATE -> COMPLETE end to end
+- last-reviewed: 2026-09-24
+- evidence: motivation earned the hard way on 2026-09-16, before the concept was taught. Two separate bugs in section 2.5 came from the same cause - the drone's situation was inferred from number combinations rather than stored - and the learner diagnosed both by tracing the chain by hand. 2026-09-20 built it: asked what MODE_TAKEOFF should do, answered the whole design unprompted - rise to target altitude, do not move forward, transition on reaching it. Wrote the mode gate on the navigation branch (d->battery_percent > 0.0 && d->mode == MODE_NAVIGATE) and the transition rule at the end of tick(). Then wrote the main() half ahead of the scaffolding being offered: while (drone.mode != MODE_COMPLETE) replacing while(1), and drone.mode = MODE_COMPLETE replacing break. Mission now flies TAKEOFF -> NAVIGATE -> COMPLETE end to end. 2026-09-24 (4 days later) added the failsafe transition inside the existing battery clamp at the top of tick() and argued for the placement unprompted: the battery is detected there, so there is no need for a second transition in the descent block. Traced correctly that nothing in tick() ever takes a drone out of MODE_FAILSAFE (it latches)
 
 ## test-is-a-claim
 - status: introduced
@@ -284,11 +284,11 @@
 - evidence: 2026-09-23 needed three reframings before the goal clicked ("im not sure what were asking"); it landed on "every if is a fork, and bugs live at the value where it switches". Then listed all seven forks in tick() accurately (one misread, < for <=, corrected on a prompt to reread character by character), and ranked them by consequence unprompted: dead-battery descent first ("drone would not descend on a dead bat"). Missed the step caps and the transition on the first pass. Asked what happens if the climb cap were deleted 0.03 m below target, he traced it past the first tick to an up/down oscillation that never settles (arithmetic slip: said 0.7 overshoot for 0.07). Located the 115/125 pivot as the target altitude and said the else holds it there. Designed and wrote claims 3-8 at the forks: battery exactly 0, drone at exactly target, drone inside one step of target for both caps. Unprompted, he raised whether a battery of 0.000001 % should really count as powered, which is a design question (a reserve threshold), not a boundary bug. Parked for 4.4
 
 ## regression-testing
-- status: seed
+- status: practicing
 - depends-on: test-is-a-claim
-- introduced: —
-- last-reviewed: —
-- evidence: —
+- introduced: 2026-09-24
+- last-reviewed: 2026-09-24
+- evidence: 2026-09-24 when asked what a green suite proves after a change, answered that it only shows the existing claims still hold, and 'it doesnt say if our battery mode trans worked' - so a new behaviour needs its own new claim. Did not come up with the baseline run (run make test BEFORE the change); that was supplied. In 4.4 the old claims were green before and after the change
 
 ## test-failure-ambiguity
 - status: introduced
@@ -676,11 +676,11 @@
 - evidence: 2026-09-21 predicted the failure correctly before compiling - "undeclared or undefined" - naming both stages in one breath, then watched gcc warn and produce a valid object file anyway rather than refusing. hit it for real on usleep. Learned that pre-1999 C allowed calling an undeclared function and assumed an int return — the same family of silent-wrong-guess problem as the earlier %d-on-a-double break — and that -Werror is what turns it from a scrollable warning into a stop
 
 ## remote-tracking-branches
-- status: introduced
+- status: practicing
 - depends-on: git-commit
 - introduced: 2026-09-22
-- last-reviewed: 2026-09-22
-- evidence: asked "what is head orgin" while amending - the first time HEAD, origin and origin/main had come up as distinct things. Given the pointer model: HEAD is where you are, origin is the name of the GitHub remote, origin/main is a local record of where the remote was at the last push or fetch and does not move on its own, so "ahead 1" is the gap between them. Then read (HEAD -> main) and (origin/main, origin/HEAD) off his own git log output and matched them to the model. Has not yet pushed with this model in hand
+- last-reviewed: 2026-09-24
+- evidence: asked "what is head orgin" while amending - the first time HEAD, origin and origin/main had come up as distinct things. Given the pointer model: HEAD is where you are, origin is the name of the GitHub remote, origin/main is a local record of where the remote was at the last push or fetch and does not move on its own, so "ahead 1" is the gap between them. Then read (HEAD -> main) and (origin/main, origin/HEAD) off his own git log output and matched them to the model. Had not yet pushed with this model in hand. 2026-09-24 asked for a walkthrough of how git works, then commit, then amend. Asked whether .git could be hand-edited to change commits (given content addressing: the hash is the filename, and each child vouches for its parent). On amend-after-push, guessed "an error or an overwrite" - both halves right, but said "i dont get it"; was walked through the non-fast-forward rejection and --force. Asked what "ahead 1" signified and was shown it means the commit exists only locally, the green light for amend. Then amended an unpushed commit and pushed it: b5436d5..037cf9f
 
 ## git-amend
 - status: practicing
@@ -940,3 +940,17 @@
 - introduced: 2026-09-24
 - last-reviewed: 2026-09-24
 - evidence: 2026-09-24 predicted that changing the climb fork to <= would fail claim 6; it passed, and he explained why himself (step capped to remaining = 0, so alt before == alt after). The principle was then named for him: a code change that leaves behaviour correct SHOULD pass. He needed both the fork and the cap broken to see red, and predicted 102 m exactly. The pivot is guarded twice
+
+## test-first-red-green
+- status: practicing
+- depends-on: test-fairness, regression-testing
+- introduced: 2026-09-24
+- last-reviewed: 2026-09-24
+- evidence: 2026-09-24 compared writing the new claim before vs after the engine change, and worked out unaided that 'after' means break-checking by hand while 'before' gives the break-check for free. Then did it: wrote claim 9, saw green, found the function had never been called from main(), called it, and got the expected red. The expectation of red is what caught the uncalled test. Wrote claim 10 red-first as well, and when claim 9's abort hid it, proposed commenting out claim 9's call to see claim 10 fail on its own. Also learned that a compile error (redefinition from a copy-pasted name) is not a red. Predictions were skipped twice and had to be asked for
+
+## failsafe
+- status: introduced
+- depends-on: finite-state-machine
+- introduced: 2026-09-24
+- last-reviewed: 2026-09-24
+- evidence: 2026-09-24 reached for a 'more professional' name than MODE_NO_POWER and was given 'failsafe', plus the idea that a mode names what the drone is doing rather than why. Decided unprompted that a drone dying during takeoff should also go to failsafe. With a prompt, spotted that claims 9 and 10 put the drone on the ground (altitude 0), which is exactly the case set aside, and moved both drones into the air, including a waypoint above the claim-10 drone so it is really still taking off. Open: is a grounded drone with no power in failsafe or just 'off'? This is the same question as the 0.000001 % reserve

@@ -77,6 +77,7 @@ void tick(DroneState *d, const Waypoint *target, double dt) {
 
     if (d->battery_percent <= 0.0) {
         d->battery_percent = 0.0;
+        d->mode = MODE_FAILSAFE;
     }
 
     /* Navigation: point at the target and fly — but only while NAVIGATING,

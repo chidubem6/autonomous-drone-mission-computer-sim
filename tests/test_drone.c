@@ -138,6 +138,28 @@ void test_descent_lands_exactly_on_target(void) {
     assert(d.mode == MODE_NAVIGATE);
 }
 
+/* ---- CLAIM 9 ----
+   A drone that is navigating when its battery runs out ends the tick in MODE_FAILSAFE */
+void test_dead_navigate_drone_transitions_to_mode_failsafe(void) {
+    DroneState d = {.battery_percent = 0, .mode = MODE_NAVIGATE, .altitude_m = 100};
+    Waypoint w = {0};
+
+    tick(&d, &w, 1.0);
+
+    assert(d.mode ==  MODE_FAILSAFE);
+}
+
+/* ---- CLAIM 10 ----
+   A drone that is in takeoff when its battery runs out ends the tick in MODE_FAILSAFE */
+void test_dead_takeoff_drone_transitions_to_mode_failsafe(void) {
+    DroneState d = {.battery_percent = 0, .mode = MODE_TAKEOFF, .altitude_m = 1};
+    Waypoint w = {.altitude_m = 100};
+
+    tick(&d, &w, 1.0);
+
+    assert(d.mode ==  MODE_FAILSAFE);
+}
+
 int main(void) {
     test_tick_drains_battery();
     test_drone_lands_at_x10();
@@ -147,6 +169,8 @@ int main(void) {
     test_drone_at_target_holds_altitude();
     test_climb_lands_exactly_on_target();
     test_descent_lands_exactly_on_target();
+    test_dead_navigate_drone_transitions_to_mode_failsafe();
+    test_dead_takeoff_drone_transitions_to_mode_failsafe();
 
     printf("all tests passed\n");
     return 0;

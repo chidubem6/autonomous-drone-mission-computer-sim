@@ -119,8 +119,17 @@ things" — judgment is built by consequences, not by instruction. Review at the
       - for 4.4: whether a battery of 0.000001 % should count as powered (a reserve / failsafe threshold) - learner's question.
       - for 4.5: a failed assert aborts, hiding every claim after it.
       - noted: the printf inside tick() made the learner misread which line had run. Still due in section 5.
-- [ ] 4.4 Every mode the drone can be in has a name. A drone sinking with a dead battery no longer reports
+- [x] 4.4 Every mode the drone can be in has a name. A drone sinking with a dead battery no longer reports
       MODE_NAVIGATE, and the change is proven safe by tests that were passing before it and still pass after.
+      - built red-first: baseline green -> MODE_FAILSAFE appended to the enum (still green) -> claims 9 (navigating) and
+        10 (taking off) written and seen red, each on its own -> one line in the battery clamp at the top of tick()
+        -> all green. The failsafe latches: nothing in tick() leaves it.
+      - claim 9 was first green because it was never called from main(). Expecting red is what caught it.
+      - claims 9 and 10 first put the drone on the ground (altitude 0), which did not match their headers. Both now fly.
+      - for 4.5: claims 3-8 depend on MODE_TAKEOFF being enum value 0 without saying so (moving MODE_FAILSAFE first
+        broke claim 7). Decide whether every claim states its mode.
+      - for 4.5: claim 9's abort hid claim 10 for real. It had to be seen red by commenting claim 9's call out.
+      - still open: is a grounded, unpowered drone 'failsafe' or 'off'? This is the same question as the 0.000001 % reserve.
 - [ ] 4.5 One command, whole suite, all-pass: every claim from 4.1–4.4 runs on every `make test`, and a broken engine
       is caught by it rather than by reading the terminal.
 

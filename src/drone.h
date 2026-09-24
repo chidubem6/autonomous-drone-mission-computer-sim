@@ -6,13 +6,14 @@
 #define DRONE_H
 
 /*
- * The three things the drone can be doing. A FlightMode variable holds
+ * The things the drone can be doing. A FlightMode variable holds
  * exactly one of these names, never an unlabelled number.
  */
 typedef enum {
     MODE_TAKEOFF,
     MODE_NAVIGATE,
     MODE_COMPLETE,
+    MODE_FAILSAFE,
 } FlightMode;
 
 typedef struct {

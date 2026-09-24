@@ -61,6 +61,11 @@ anyone can open the link and watch the mission happen.
   idea: the sim writes its own black box, then an analyzer reads it)
 - Wind, drag, realistic physics
 - More than one drone
+- Real hardware sensors or a real camera feed in place of simulated ones —
+  only after the simulated versions exist, since they define the interface a
+  real sensor would plug into
+- Open question, no decision needed yet: stay a portfolio piece, or grow toward
+  real use. Revisit once the MVP is deployed
 
 ## The trunk — core components
 
