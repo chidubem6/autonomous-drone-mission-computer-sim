@@ -112,8 +112,8 @@
 - status: practicing
 - depends-on: compiling-c
 - introduced: 2026-09-16
-- last-reviewed: 2026-09-20
-- evidence: 2026-09-16 met -Wall -Wextra -Werror in the Makefile as a deliberate choice rather than noise. 2026-09-20 had two of them fire for real. First -Werror=maybe-uninitialized on the ghost experiment; read it together, including that "may" means the compiler could not prove it, that the bracketed name identifies the specific check, and that the net has holes once a pointer crosses a function boundary. Then hit -Werror=unused-value on his own d->mode == MODE_NAVIGATE; and self-corrected from the code rather than the message - recognised he had written a comparison where he meant an assignment, without reading the error
+- last-reviewed: 2026-09-24
+- evidence: 2026-09-24 commenting out the climb cap left remaining_alt unused; -Werror stopped the build and he fixed it himself by commenting out the declaration too, without asking. Earlier: 2026-09-16 met -Wall -Wextra -Werror in the Makefile as a deliberate choice rather than noise. 2026-09-20 had two of them fire for real. First -Werror=maybe-uninitialized on the ghost experiment; read it together, including that "may" means the compiler could not prove it, that the bracketed name identifies the specific check, and that the net has holes once a pointer crosses a function boundary. Then hit -Werror=unused-value on his own d->mode == MODE_NAVIGATE; and self-corrected from the code rather than the message - recognised he had written a comparison where he meant an assignment, without reading the error
 
 ## project-structure
 - status: introduced
@@ -245,8 +245,8 @@
 - status: practicing
 - depends-on: test-is-a-claim
 - introduced: 2026-09-21
-- last-reviewed: 2026-09-22
-- evidence: 2026-09-21 chose his own first claim in English - "after a tick, battery should go down" - then wrote it unaided as assert(battery_before > d.battery_percent), having first set up a drone with .battery_percent = 100 because {0} was the wrong situation to test. Predicted the failure shape before breaking the engine: "maybe an error. printtf all test passed doest get printed" - both correct. 2026-09-22 wrote his second and third asserts, and read a real failure message line by line: asked what "core dumped" meant, and was walked through assert expanding to __assert_fail, which prints expression/file/line from inside his own process, then abort() raising SIGABRT, the OS reporting it, and make propagating the nonzero status
+- last-reviewed: 2026-09-24
+- evidence: 2026-09-23 predicted "nothing else after 4 runs" when claim 4 aborted, but cited the wrong evidence (a MODE NAVIGATE line that came from claim 1); was shown that the proof is what's missing. He then read a later MODE NAVIGATE line as the mode assert having run, and was told a passing assert prints nothing, so every MODE NAVIGATE comes from the printf inside tick(). Learned that abort() hides every claim after the first failure (relevant for 4.5). Earlier: 2026-09-21 chose his own first claim in English - "after a tick, battery should go down" - then wrote it unaided as assert(battery_before > d.battery_percent), having first set up a drone with .battery_percent = 100 because {0} was the wrong situation to test. Predicted the failure shape before breaking the engine: "maybe an error. printtf all test passed doest get printed" - both correct. 2026-09-22 wrote his second and third asserts, and read a real failure message line by line: asked what "core dumped" meant, and was walked through assert expanding to __assert_fail, which prints expression/file/line from inside his own process, then abort() raising SIGABRT, the OS reporting it, and make propagating the nonzero status
 
 ## test-program
 - status: practicing
@@ -259,8 +259,8 @@
 - status: practicing
 - depends-on: test-is-a-claim, assert
 - introduced: 2026-09-22
-- last-reviewed: 2026-09-22
-- evidence: 2026-09-22 asked what "fair" even means, and first guessed it meant checking that no other field changed. Given the definition - a test that would fail if the engine were wrong - he applied it himself: asked whether any wrong engine could still pass while the waypoint sat at x = 10 and the expected answer was also 10, answered "a faulty engine that keeps drones at x = 10", and moved the waypoint out to 100 so the expected value cannot be copied from the target. Then proved the finished test fair by dropping CRUISE_SPEED_MPS to 5.0, watching the assertion abort, and restoring it
+- last-reviewed: 2026-09-24
+- evidence: 2026-09-23 claim 3 was green but UNFAIR: alt_after read claim 1's grounded drone, so the assert was really 10 > 0. He predicted it would fail with the descent line commented out, watched it still pass, then traced the cause himself ("alt_after is reading d instead of d_dead_drone"), fixed it, and confirmed red-then-green. Break-checked claims 4, 5, 6, 7 and 8 with a correct prediction each time (including numbers: 102 m, 97.5 m). On claim 6, his <= break still passed and he explained why unprompted (the cap trims the step to remaining = 0). He was given the principle that tests check behaviour, not code, and needed both guards broken to see red. Earlier: 2026-09-22 asked what "fair" even means, and first guessed it meant checking that no other field changed. Given the definition - a test that would fail if the engine were wrong - he applied it himself: asked whether any wrong engine could still pass while the waypoint sat at x = 10 and the expected answer was also 10, answered "a faulty engine that keeps drones at x = 10", and moved the waypoint out to 100 so the expected value cannot be copied from the target. Then proved the finished test fair by dropping CRUISE_SPEED_MPS to 5.0, watching the assertion abort, and restoring it
 
 ## test-isolation
 - status: practicing
@@ -270,18 +270,18 @@
 - evidence: 2026-09-22 began claim 2 by typing "d." - reaching for the drone claim 1 had already ticked. Asked what state that drone was actually in, and what would happen to claim 2 if claim 1 were later edited, he answered both correctly ("it is navigation mode. it will be in a different position if a waypoint was provided in claim 1") and declared a fresh d_nav_east / w_nav_east pair instead. Also met gcc's "redefinition of d" when the new names collided with the old, and read the accompanying note line pointing at the first definition
 
 ## choosing-a-tolerance
-- status: introduced
+- status: practicing
 - depends-on: nan-and-float-comparison
 - introduced: 2026-09-22
-- last-reviewed: 2026-09-22
-- evidence: 2026-09-22 pushed back on the number three times - "should tolerance be like 0.01?", "why not just within 1 metre", "so why 1e-9" - which is the right question to ask about a magic number. Was given the two walls (far above the rounding noise floor, far below the smallest error worth catching) and the honest answer that 1e-9 is a round place to stand in a very wide safe band, not a derived value. Wrote TOLERANCE_M 1e-9 into the test himself. The reasoning was supplied rather than produced
+- last-reviewed: 2026-09-24
+- evidence: 2026-09-24 asked cold whether the cap claim should use == or a tolerance: chose == "because we would be using the cap that makes it exact" - right call, mechanism-level reason. The stronger reason (exactness IS the claim, because the transition needs the exact value) was supplied. Challenged "did you actually run 10 million" - verified: a throwaway program found 0 of 10M near-target pairs where alt + (target - alt) != target. Also chose == for claim 6 (the else does no arithmetic, so nothing can drift). 2026-09-22 pushed back on the number three times - "should tolerance be like 0.01?", "why not just within 1 metre", "so why 1e-9" - which is the right question to ask about a magic number. Was given the two walls (far above the rounding noise floor, far below the smallest error worth catching) and the honest answer that 1e-9 is a round place to stand in a very wide safe band, not a derived value. Wrote TOLERANCE_M 1e-9 into the test himself. The reasoning was supplied rather than produced
 
 ## edge-cases
-- status: seed
+- status: practicing
 - depends-on: test-is-a-claim
-- introduced: —
-- last-reviewed: —
-- evidence: —
+- introduced: 2026-09-23
+- last-reviewed: 2026-09-24
+- evidence: 2026-09-23 needed three reframings before the goal clicked ("im not sure what were asking"); it landed on "every if is a fork, and bugs live at the value where it switches". Then listed all seven forks in tick() accurately (one misread, < for <=, corrected on a prompt to reread character by character), and ranked them by consequence unprompted: dead-battery descent first ("drone would not descend on a dead bat"). Missed the step caps and the transition on the first pass. Asked what happens if the climb cap were deleted 0.03 m below target, he traced it past the first tick to an up/down oscillation that never settles (arithmetic slip: said 0.7 overshoot for 0.07). Located the 115/125 pivot as the target altitude and said the else holds it there. Designed and wrote claims 3-8 at the forks: battery exactly 0, drone at exactly target, drone inside one step of target for both caps. Unprompted, he raised whether a battery of 0.000001 % should really count as powered, which is a design question (a reserve threshold), not a boundary bug. Parked for 4.4
 
 ## regression-testing
 - status: seed
@@ -651,8 +651,8 @@
 - status: practicing
 - depends-on: delta-time, main-loop
 - introduced: 2026-09-15
-- last-reviewed: 2026-09-15
-- evidence: predicted correctly that an unthrottled loop would "print really fast and the altitude will shoot up", then asked unprompted why it reached ~2000 m in a second — the right question. Worked the arithmetic with one correction (first said ~2000 ticks, forgetting each tick adds 0.1 not 1, then got 20,000 unaided). The punchline was delivered, not derived: TICK_S is a claim the code asserts, not a measurement, so 20,000 ticks x 0.05 s = 1000 simulated seconds per real second. Task 2.3 is the fix. 2026-09-15 closed the gap with usleep and then verified it independently, unprompted: counted 10 m in 5 s against a 2 m/s climb rate. Asked for the arithmetic to be walked through pass by pass, which landed the cancellation — tick rate controls smoothness, not speed
+- last-reviewed: 2026-09-24
+- evidence: 2026-09-24 review passed after 9 days: asked why the test needs no usleep, answered "we are not replicating the 20hz feature of main.c in test but the actual ending behaviour of the drone", and that adding one would only cost waiting time. Was told the rest: tick() never reads a clock, so the results would be identical and only the wait grows with the suite. Earlier: predicted correctly that an unthrottled loop would "print really fast and the altitude will shoot up", then asked unprompted why it reached ~2000 m in a second — the right question. Worked the arithmetic with one correction (first said ~2000 ticks, forgetting each tick adds 0.1 not 1, then got 20,000 unaided). The punchline was delivered, not derived: TICK_S is a claim the code asserts, not a measurement, so 20,000 ticks x 0.05 s = 1000 simulated seconds per real second. Task 2.3 is the fix. 2026-09-15 closed the gap with usleep and then verified it independently, unprompted: counted 10 m in 5 s against a 2 m/s climb rate. Asked for the arithmetic to be walked through pass by pass, which landed the cancellation — tick rate controls smoothness, not speed
 
 ## interrupt-signal-ctrl-c
 - status: introduced
@@ -675,12 +675,19 @@
 - last-reviewed: 2026-09-21
 - evidence: 2026-09-21 predicted the failure correctly before compiling - "undeclared or undefined" - naming both stages in one breath, then watched gcc warn and produce a valid object file anyway rather than refusing. hit it for real on usleep. Learned that pre-1999 C allowed calling an undeclared function and assumed an int return — the same family of silent-wrong-guess problem as the earlier %d-on-a-double break — and that -Werror is what turns it from a scrollable warning into a stop
 
-## git-amend
+## remote-tracking-branches
 - status: introduced
+- depends-on: git-commit
+- introduced: 2026-09-22
+- last-reviewed: 2026-09-22
+- evidence: asked "what is head orgin" while amending - the first time HEAD, origin and origin/main had come up as distinct things. Given the pointer model: HEAD is where you are, origin is the name of the GitHub remote, origin/main is a local record of where the remote was at the last push or fetch and does not move on its own, so "ahead 1" is the gap between them. Then read (HEAD -> main) and (origin/main, origin/HEAD) off his own git log output and matched them to the model. Has not yet pushed with this model in hand
+
+## git-amend
+- status: practicing
 - depends-on: git-commit, git-staging-area
 - introduced: 2026-09-15
-- last-reviewed: 2026-09-15
-- evidence: amended three times in one sitting — message rewrite, trailer removal, then a content fix. Saw that amend does not edit a commit but builds a new one, so the hash changes every time, and that this is safe here only because nothing is pushed. The "amend freely before a push, think hard after" rule was given, not derived
+- last-reviewed: 2026-09-22
+- evidence: amended three times in one sitting — message rewrite, trailer removal, then a content fix. Saw that amend does not edit a commit but builds a new one, so the hash changes every time, and that this is safe here only because nothing is pushed. The "amend freely before a push, think hard after" rule was given, not derived. 2026-09-22 asked for it cold - "how do i override a commit" - and after a week away still had the core: predicted "the new commit is on top", though unsure whether the old one would still show in the log. Asked what origin and HEAD were, which had not been explained before; given the pointer model (HEAD -> main is you, origin/main is the last record of GitHub, so ahead 1 is the gap) and then read it straight off his own git log output. Amended cleanly to fold in the comment cleanup
 
 ## conditionals
 - status: practicing
@@ -728,8 +735,8 @@
 - status: practicing
 - depends-on: none
 - introduced: 2026-09-16
-- last-reviewed: 2026-09-20
-- evidence: 2026-09-17 caught one themselves for the first time, unprompted — asked whether `/*Altitude does not change when landed */` was correct on an else branch that the drone actually spends most of its flight in (battery fine, already at target altitude). Reasoned about which cases reach the branch rather than reading the words. That question also surfaced a real bug neither of us had noticed: nothing descends the drone while the battery is healthy, so with WP1 at 400 m and WP2 at 310 m it can never come down. Parked for 3.5. Earlier: 2026-09-16 met it a third time, on their own new code: the three Waypoint field comments were copied from DroneState and still read "position east of the launch point" inside a struct that describes a target, not the vehicle. Rewrote them as "target position ..." once it was pointed out. Still flagged rather than self-caught. Earlier: twice in one sitting — a ceiling clamp labelled "Altitude cannot be less than 0", copy-pasted from its floor twin, and a battery comment still claiming "about 20 minutes (1200s)" over a value changed to (100.0 / 10) for testing. The rule given: a wrong comment is worse than none, because the reader trusts it over the code. Flagged, not yet independently caught 2026-09-20 asked why DESCENT_RATE_MPS could not simply be reused; when told its comment scoped it to the flat-battery case, proposed a separate CONTROLLED_DESCENT_RATE_MPS rather than widening the comment — choosing two honest names over one stretched one.
+- last-reviewed: 2026-09-24
+- evidence: 2026-09-24 claim 8's header was copied from claim 7 and still said "below". He fixed it on a prompt to reread it, not self-caught. The same copy-from-the-previous-claim slip hit code four times this task (claim 3's first draft, claim 5, claim 7's assert, claim 8's header), each time green or silently wrong. Earlier: 2026-09-17 caught one themselves for the first time, unprompted — asked whether `/*Altitude does not change when landed */` was correct on an else branch that the drone actually spends most of its flight in (battery fine, already at target altitude). Reasoned about which cases reach the branch rather than reading the words. That question also surfaced a real bug neither of us had noticed: nothing descends the drone while the battery is healthy, so with WP1 at 400 m and WP2 at 310 m it can never come down. Parked for 3.5. Earlier: 2026-09-16 met it a third time, on their own new code: the three Waypoint field comments were copied from DroneState and still read "position east of the launch point" inside a struct that describes a target, not the vehicle. Rewrote them as "target position ..." once it was pointed out. Still flagged rather than self-caught. Earlier: twice in one sitting — a ceiling clamp labelled "Altitude cannot be less than 0", copy-pasted from its floor twin, and a battery comment still claiming "about 20 minutes (1200s)" over a value changed to (100.0 / 10) for testing. The rule given: a wrong comment is worse than none, because the reader trusts it over the code. Flagged, not yet independently caught 2026-09-20 asked why DESCENT_RATE_MPS could not simply be reused; when told its comment scoped it to the flat-battery case, proposed a separate CONTROLLED_DESCENT_RATE_MPS rather than widening the comment — choosing two honest names over one stretched one.
 
 ## for-loop
 - status: practicing
@@ -919,3 +926,17 @@
 - introduced: 2026-09-21
 - last-reviewed: 2026-09-21
 - evidence: argued for it against a recommendation to defer, and won on evidence rather than preference - "what if we do clean on build/drone instead of drone test_Drone?" - pointing at a staleness failure that had already happened in front of him rather than one he imagined.
+
+## variable-scope
+- status: practicing
+- depends-on: functions-over-main
+- introduced: 2026-09-23
+- last-reviewed: 2026-09-24
+- evidence: 2026-09-23 named the pain himself - "i have to name them different all the time" - after claim 3's draft hit a second battery_before. Shown that distance_to() and bearing_to() both declare dx without a clash, he answered "the scope of the variables?". He proposed test functions; was shown bare { } blocks as the lighter option and that assert prints the enclosing function's name. Then chose the braces himself, wrapped every claim in its own block, and reused plain names (d, w) in claims 7-8. 2026-09-24 asked what a bare block actually is ("are they no name functions?"); was given blocks as compound statements (the same { } that follows if/while) that see outward but not in, versus functions walled off in both directions. Applied it straight away: said claim 3's old d-for-d_dead_drone slip "wouldnt compile since d doesnt exist there". Then asked to switch to functions, and converted claims 1-2 correctly himself (defined above main)
+
+## tests-check-behaviour-not-code
+- status: practicing
+- depends-on: test-fairness
+- introduced: 2026-09-24
+- last-reviewed: 2026-09-24
+- evidence: 2026-09-24 predicted that changing the climb fork to <= would fail claim 6; it passed, and he explained why himself (step capped to remaining = 0, so alt before == alt after). The principle was then named for him: a code change that leaves behaviour correct SHOULD pass. He needed both the fork and the cap broken to see red, and predicted 102 m exactly. The pivot is guarded twice

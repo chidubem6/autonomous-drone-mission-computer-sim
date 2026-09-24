@@ -100,8 +100,25 @@ things" — judgment is built by consequences, not by instruction. Review at the
       - decided 2026-09-22: the printf inside tick() stays until section 5. The learner was offered a short task to move
         the transition announcement out to main.c before 4.3, weighed it against section 5's contract work, and chose to keep
         the fix where the reason for it lives. Tasks 4.3-4.5 run with MODE NAVIGATE printing into the test output.
-- [ ] 4.3 The boundaries are checked: the places where the engine is most likely to be wrong are named and asserted,
+- [x] 4.3 The boundaries are checked: the places where the engine is most likely to be wrong are named and asserted,
       not the places where it is obviously right.
+      - all seven forks in tick() were listed, then ranked by consequence. Claims 3-8 sit at the forks: dead drone at
+        battery exactly 0 sinks; healthy drone climbs / descends / holds exactly at target; climb and descent caps land
+        exactly on target from inside one step, plus the takeoff -> navigate transition asserted at that pivot. Every
+        claim was break-checked with a prediction first.
+      - claim 3 was green but unfair on its first version (it read claim 1's drone). The break check caught it. This is
+        the reason the break check is not optional.
+      - claim 6 exposed double protection: <= on the climb fork alone does not change behaviour, because the cap trims
+        the step to 0. Only fork AND cap broken together fail it.
+      - the cap tests use == on purpose: exactness is the claim, and the transition relies on it. A throwaway check found
+        0 of 10M near-target pairs where alt + (target - alt) != target. This settles the section-3 worry about the
+        transition's exact comparison, at least for the current engine.
+      - each claim is now its own named function, and main() is the list of calls. The learner first chose bare { }
+        blocks, then asked to switch the same session: named failures and a wall in both directions. He converted
+        claims 1-2; claims 3-8 were converted for him on request (structure only, bodies unchanged).
+      - for 4.4: whether a battery of 0.000001 % should count as powered (a reserve / failsafe threshold) - learner's question.
+      - for 4.5: a failed assert aborts, hiding every claim after it.
+      - noted: the printf inside tick() made the learner misread which line had run. Still due in section 5.
 - [ ] 4.4 Every mode the drone can be in has a name. A drone sinking with a dead battery no longer reports
       MODE_NAVIGATE, and the change is proven safe by tests that were passing before it and still pass after.
 - [ ] 4.5 One command, whole suite, all-pass: every claim from 4.1–4.4 runs on every `make test`, and a broken engine
