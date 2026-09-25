@@ -45,6 +45,5 @@ typedef struct {
 void tick(DroneState *d, const Waypoint *target, double dt);
 double bearing_to(const DroneState *d, const Waypoint *w);
 double distance_to(const DroneState *d, const Waypoint *w);
-void print_state(const DroneState *d);
 
 #endif /* DRONE_H */

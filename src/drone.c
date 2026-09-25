@@ -5,7 +5,6 @@
  * mission, no tick rate, no stopping condition and no main(). It is
  * compiled into both the drone program and the test program.
  */
-#include <stdio.h>
 #include <math.h>
 #include "drone.h"
 
@@ -26,12 +25,6 @@
 
 /* How fast the drone flies toward a waypoint, in metres per second. */
 #define CRUISE_SPEED_MPS 10.0
-
-/* Print one line describing everything the drone knows about itself. */
-void print_state(const DroneState *d) {
-    printf("POS %6.1f,%6.1f   ALT %5.1f m   HDG %5.1f deg   SPD %6.1f m/s   BAT %5.1f %%\n", 
-        d->x_m, d->y_m, d->altitude_m, d->heading_deg, d->speed_mps, d->battery_percent);
-}
 
 /*
  * Straight-line horizontal distance from the drone to a waypoint, in metres.
@@ -141,6 +134,5 @@ void tick(DroneState *d, const Waypoint *target, double dt) {
        mode, look at an event, write a new mode. */
     if (d->mode == MODE_TAKEOFF && d->altitude_m >= target->altitude_m) {
         d->mode = MODE_NAVIGATE;
-        printf("MODE NAVIGATE\n");
     }
 }

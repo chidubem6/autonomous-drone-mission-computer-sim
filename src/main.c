@@ -19,6 +19,30 @@
    length, so the count lives here and every loop is checked against it. */
 #define MISSION_WAYPOINT_COUNT 3
 
+/* Print one line describing everything the drone knows about itself. */
+void print_state(const DroneState *d) {
+    printf("POS %6.1f,%6.1f   ALT %5.1f m   HDG %5.1f deg   SPD %6.1f m/s   BAT %5.1f %%\n", 
+        d->x_m, d->y_m, d->altitude_m, d->heading_deg, d->speed_mps, d->battery_percent);
+}
+
+const char* mode_to_string(FlightMode mode) {
+    switch (mode) {
+        case MODE_TAKEOFF:
+            return "TAKEOFF";
+        
+        case MODE_NAVIGATE:
+            return "NAVIGATE";
+    
+        case MODE_COMPLETE:
+            return "COMPLETE";
+    
+        case MODE_FAILSAFE:
+            return "FAILSAFE";
+        }
+        return "UNKNOWN";
+}
+
+
 int main(void) {
     DroneState drone = {
         .x_m = 0.0,
@@ -52,7 +76,11 @@ int main(void) {
     print_state(&drone);
 
     while(drone.mode != MODE_COMPLETE ) {
+        FlightMode prev_mode = drone.mode;
         tick(&drone, &mission[current_wp], TICK_S);
+        if (drone.mode != prev_mode) {
+            printf("%s\n", mode_to_string(drone.mode));
+        }
         print_state(&drone);
         printf("   -> WP%d   %6.1f m   BRG %5.1f deg\n", current_wp, distance_to(&drone, &mission[current_wp]), bearing_to(&drone, &mission[current_wp]));
 

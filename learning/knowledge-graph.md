@@ -28,8 +28,8 @@
 - status: understood
 - depends-on: pointers
 - introduced: 2026-09-14
-- last-reviewed: 2026-09-17
-- evidence: 2026-09-17 retrieved it cold, three days later, with no prompting: asked what type tick's new third parameter should be, answered `Waypoint * w`, then when asked whether it should be const, answered "no it should be const" — reasoning from the fact that tick writes the drone and only reads the waypoint. Earlier: used `const DroneState *d` on print_state after the rationale — a compiler-enforced promise not to modify, and the contrast that will make section 2's un-const `update(DroneState *)` legible. Applied as given, not yet independently reasoned about. 2026-09-15 reasoned it out independently before being told: asked for the tick signature, dropped the const and said why — "dronestate isnt const because we are chaning it". The contrast the section-1 lesson predicted would land, landed
+- last-reviewed: 2026-09-25
+- evidence: 2026-09-17 retrieved it cold, three days later, with no prompting: asked what type tick's new third parameter should be, answered `Waypoint * w`, then when asked whether it should be const, answered "no it should be const" — reasoning from the fact that tick writes the drone and only reads the waypoint. Earlier: used `const DroneState *d` on print_state after the rationale — a compiler-enforced promise not to modify, and the contrast that will make section 2's un-const `update(DroneState *)` legible. Applied as given, not yet independently reasoned about. 2026-09-15 reasoned it out independently before being told: asked for the tick signature, dropped the const and said why — "dronestate isnt const because we are chaning it". The contrast the section-1 lesson predicted would land, landed 2026-09-25 spaced review (8 days): passed — said without const a serialiser that wrote d->speed_mps would alter the real flying drone, and const prevents it. Did not say WHEN const catches it (at compile time, the build refuses), so that half was supplied.
 
 ## struct
 - status: understood
@@ -77,8 +77,8 @@
 - status: practicing
 - depends-on: none
 - introduced: 2026-09-20
-- last-reviewed: 2026-09-24
-- evidence: 2026-09-20 wrote the FlightMode enum (MODE_TAKEOFF, MODE_NAVIGATE, MODE_COMPLETE), added the FlightMode mode field to DroneState, and set it explicitly in main()'s initializer. Predicted correctly, before writing any of it, that an unmentioned field would come out 0 and that 0 would mean MODE_TAKEOFF because it is listed first - and accepted that being right by accident is fragile under reordering. Asked unprompted whether a MODE_OFF was needed; was given the test (is there a situation no name describes?) and shown the real hole it exposes - a battery-flat drone still reporting MODE_NAVIGATE. Typo'd NODE_COMPLETE and fixed it once told, after being shown that the compiler would only complain later, at the use site. 2026-09-24 appended MODE_FAILSAFE at the END of the enum and dropped the count from the comment above it so it cannot go stale. Moved it to the top unprompted to test the question, saw a test fail and didn't know why. When pointed at claim 7's drone, which sets no .mode, answered correctly that it would start as 0, now MODE_FAILSAFE. Was shown that claims 3-8 depend on MODE_TAKEOFF being 0 without saying so
+- last-reviewed: 2026-09-25
+- evidence: 2026-09-20 wrote the FlightMode enum (MODE_TAKEOFF, MODE_NAVIGATE, MODE_COMPLETE), added the FlightMode mode field to DroneState, and set it explicitly in main()'s initializer. Predicted correctly, before writing any of it, that an unmentioned field would come out 0 and that 0 would mean MODE_TAKEOFF because it is listed first - and accepted that being right by accident is fragile under reordering. Asked unprompted whether a MODE_OFF was needed; was given the test (is there a situation no name describes?) and shown the real hole it exposes - a battery-flat drone still reporting MODE_NAVIGATE. Typo'd NODE_COMPLETE and fixed it once told, after being shown that the compiler would only complain later, at the use site. 2026-09-24 appended MODE_FAILSAFE at the END of the enum and dropped the count from the comment above it so it cannot go stale. Moved it to the top unprompted to test the question, saw a test fail and didn't know why. When pointed at claim 7's drone, which sets no .mode, answered correctly that it would start as 0, now MODE_FAILSAFE. Was shown that claims 3-8 depend on MODE_TAKEOFF being 0 without saying so 2026-09-25 wrote printf("%s", drone.mode) expecting the mode's name; -Wformat refused it. Was told an enum's names exist only in source and compile to 0..3. Then said unprompted that a raw number is readable by a server but confusing to a person; the reorder risk to a separate reader was supplied, tied to his own 4.4 claim-7 break.
 
 ## printf-format
 - status: practicing
@@ -113,8 +113,8 @@
 - status: practicing
 - depends-on: compiling-c
 - introduced: 2026-09-16
-- last-reviewed: 2026-09-24
-- evidence: 2026-09-24 commenting out the climb cap left remaining_alt unused; -Werror stopped the build and he fixed it himself by commenting out the declaration too, without asking. Earlier: 2026-09-16 met -Wall -Wextra -Werror in the Makefile as a deliberate choice rather than noise. 2026-09-20 had two of them fire for real. First -Werror=maybe-uninitialized on the ghost experiment; read it together, including that "may" means the compiler could not prove it, that the bracketed name identifies the specific check, and that the net has holes once a pointer crosses a function boundary. Then hit -Werror=unused-value on his own d->mode == MODE_NAVIGATE; and self-corrected from the code rather than the message - recognised he had written a comparison where he meant an assignment, without reading the error
+- last-reviewed: 2026-09-25
+- evidence: 2026-09-24 commenting out the climb cap left remaining_alt unused; -Werror stopped the build and he fixed it himself by commenting out the declaration too, without asking. Earlier: 2026-09-16 met -Wall -Wextra -Werror in the Makefile as a deliberate choice rather than noise. 2026-09-20 had two of them fire for real. First -Werror=maybe-uninitialized on the ghost experiment; read it together, including that "may" means the compiler could not prove it, that the bracketed name identifies the specific check, and that the net has holes once a pointer crosses a function boundary. Then hit -Werror=unused-value on his own d->mode == MODE_NAVIGATE; and self-corrected from the code rather than the message - recognised he had written a comparison where he meant an assignment, without reading the error 2026-09-25 hit -Wformat (%s given an enum) and -Wreturn-type (switch with no fallback return). Was told -Wswitch only checks enum coverage on a switch WITHOUT default, which is why the fallback return goes after the switch rather than in a default case.
 
 ## project-structure
 - status: introduced
@@ -309,8 +309,8 @@
 - status: introduced
 - depends-on: none
 - introduced: 2026-09-13
-- last-reviewed: 2026-09-13
-- evidence: explained that a program writes to standard output without knowing where it lands; the terminal is a default, not a law
+- last-reviewed: 2026-09-25
+- evidence: explained that a program writes to standard output without knowing where it lands; the terminal is a default, not a law 2026-09-25 was told the reader of the output becomes the section-6 server, a machine reading line by line.
 
 ## stdin-stdout-pipes
 - status: introduced
@@ -329,9 +329,9 @@
 ## data-contract
 - status: introduced
 - depends-on: process-architecture-two-programs
-- introduced: 2026-09-13
-- last-reviewed: —
-- evidence: trunk component #5 — both sides must agree on field names and units or nothing on screen moves
+- introduced: 2026-09-25
+- last-reviewed: 2026-09-25
+- evidence: trunk component #5 — both sides must agree on field names and units or nothing on screen moves 2026-09-25 first real contact: asked unprompted "who are we announcing to when we transition" - the question the contract answers. Agreed the mode must travel as text, not as an enum number whose meaning lives in drone.h.
 
 ## json
 - status: seed
@@ -736,8 +736,8 @@
 - status: practicing
 - depends-on: none
 - introduced: 2026-09-16
-- last-reviewed: 2026-09-24
-- evidence: 2026-09-24 claim 8's header was copied from claim 7 and still said "below". He fixed it on a prompt to reread it, not self-caught. The same copy-from-the-previous-claim slip hit code four times this task (claim 3's first draft, claim 5, claim 7's assert, claim 8's header), each time green or silently wrong. Earlier: 2026-09-17 caught one themselves for the first time, unprompted — asked whether `/*Altitude does not change when landed */` was correct on an else branch that the drone actually spends most of its flight in (battery fine, already at target altitude). Reasoned about which cases reach the branch rather than reading the words. That question also surfaced a real bug neither of us had noticed: nothing descends the drone while the battery is healthy, so with WP1 at 400 m and WP2 at 310 m it can never come down. Parked for 3.5. Earlier: 2026-09-16 met it a third time, on their own new code: the three Waypoint field comments were copied from DroneState and still read "position east of the launch point" inside a struct that describes a target, not the vehicle. Rewrote them as "target position ..." once it was pointed out. Still flagged rather than self-caught. Earlier: twice in one sitting — a ceiling clamp labelled "Altitude cannot be less than 0", copy-pasted from its floor twin, and a battery comment still claiming "about 20 minutes (1200s)" over a value changed to (100.0 / 10) for testing. The rule given: a wrong comment is worse than none, because the reader trusts it over the code. Flagged, not yet independently caught 2026-09-20 asked why DESCENT_RATE_MPS could not simply be reused; when told its comment scoped it to the flat-battery case, proposed a separate CONTROLLED_DESCENT_RATE_MPS rather than widening the comment — choosing two honest names over one stretched one.
+- last-reviewed: 2026-09-25
+- evidence: 2026-09-24 claim 8's header was copied from claim 7 and still said "below". He fixed it on a prompt to reread it, not self-caught. The same copy-from-the-previous-claim slip hit code four times this task (claim 3's first draft, claim 5, claim 7's assert, claim 8's header), each time green or silently wrong. Earlier: 2026-09-17 caught one themselves for the first time, unprompted — asked whether `/*Altitude does not change when landed */` was correct on an else branch that the drone actually spends most of its flight in (battery fine, already at target altitude). Reasoned about which cases reach the branch rather than reading the words. That question also surfaced a real bug neither of us had noticed: nothing descends the drone while the battery is healthy, so with WP1 at 400 m and WP2 at 310 m it can never come down. Parked for 3.5. Earlier: 2026-09-16 met it a third time, on their own new code: the three Waypoint field comments were copied from DroneState and still read "position east of the launch point" inside a struct that describes a target, not the vehicle. Rewrote them as "target position ..." once it was pointed out. Still flagged rather than self-caught. Earlier: twice in one sitting — a ceiling clamp labelled "Altitude cannot be less than 0", copy-pasted from its floor twin, and a battery comment still claiming "about 20 minutes (1200s)" over a value changed to (100.0 / 10) for testing. The rule given: a wrong comment is worse than none, because the reader trusts it over the code. Flagged, not yet independently caught 2026-09-20 asked why DESCENT_RATE_MPS could not simply be reused; when told its comment scoped it to the flat-battery case, proposed a separate CONTROLLED_DESCENT_RATE_MPS rather than widening the comment — choosing two honest names over one stretched one. 2026-09-25 names lie too: named the function print_mode though it only returned text, then called it bare and saw nothing print. When asked why the bare call looked finished, answered 'the name says print so i assumed it printed'. Renamed to mode_to_string after proposing 'tostring'; the type prefix (no overloading in C) was supplied.
 
 ## for-loop
 - status: practicing
@@ -904,8 +904,8 @@
 - status: practicing
 - depends-on: interface-vs-implementation
 - introduced: 2026-09-21
-- last-reviewed: 2026-09-21
-- evidence: proposed the split himself once the multiple-definition error appeared - "the main function in drone.c should be extracted and call on the functinos that are currently in drone.c" - and worked out that main's locals move with main. Sorted the eight constants across the two files correctly, though by an "all drones vs this instance" rule rather than the decisive one (a constant lives where the code using it lives); said honestly "im not sure how to reason it. what belogns in drone.c and main.c" before getting TICK_S right anyway.
+- last-reviewed: 2026-09-25
+- evidence: proposed the split himself once the multiple-definition error appeared - "the main function in drone.c should be extracted and call on the functinos that are currently in drone.c" - and worked out that main's locals move with main. Sorted the eight constants across the two files correctly, though by an "all drones vs this instance" rule rather than the decisive one (a constant lives where the code using it lives); said honestly "im not sure how to reason it. what belogns in drone.c and main.c" before getting TICK_S right anyway. 2026-09-25 proposed removing every printf from drone.c; asked why nothing in the engine should print, then proposed moving print_state to main.c himself. Detected the mode change in main.c by saving the mode before tick() and comparing after - his proposal, not prompted beyond 'what does main.c have after tick returns'. Placed mode_to_string in main.c ('naming the mode is about what gets said'), weighed drone.c, and settled it on which programs need the names today.
 
 ## make-dependency-graph
 - status: practicing
@@ -983,3 +983,24 @@
 - introduced: 2026-09-25
 - last-reviewed: 2026-09-25
 - evidence: 2026-09-25 asked what a build server is; told it is a machine that builds unattended and listens only to exit codes. Section 8's Render deploy will run make inside Docker, and a nonzero step stops the deploy.
+
+## switch-statement
+- status: practicing
+- depends-on: enums, conditionals
+- introduced: 2026-09-25
+- last-reviewed: 2026-09-25
+- evidence: proposed a switch himself for mapping a FlightMode to text ("like if branches but because its specified we use switch"). Syntax was shown; wrote mode_to_string with a return-per-case for all four modes correctly. Missed the fallback return; -Wreturn-type caught it. Worked out that an out-of-range value falls through every case ("it wont do anything and maybe wont return anything"), predicted a default would show UNKNOWN at runtime, and was told why the fallback belongs after the switch (keeps -Wswitch alive). Why-after-switch was supplied, not produced - re-ask cold later.
+
+## string-literals
+- status: introduced
+- depends-on: pointers, const-correctness
+- introduced: 2026-09-25
+- last-reviewed: 2026-09-25
+- evidence: told a string literal is fixed text stored in the program, and a function handing one back returns const char *. Wrote the const char * return type correctly in mode_to_string.
+
+## dropped-return-value
+- status: practicing
+- depends-on: functions-over-main
+- introduced: 2026-09-25
+- last-reviewed: 2026-09-25
+- evidence: third occurrence (4.5 twice, 5.1 once): called print_mode(drone.mode) with nothing receiving the result. Traced the path when asked where "NAVIGATE" went, and answered "i need to do printf". The misleading name made the bare call look complete.

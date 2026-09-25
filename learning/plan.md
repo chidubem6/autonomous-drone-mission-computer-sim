@@ -146,11 +146,32 @@ things" — judgment is built by consequences, not by instruction. Review at the
         claim 1 relied on it too.
       - still open, carried forward: is a grounded, unpowered drone 'failsafe' or 'off' (same question as the 0.000001 %
         reserve). The printf inside tick() is still due in section 5.
-      - DUE AT THE START OF THE NEXT LESSON: the section-4 format trial review (propose-first). Keep, change, or drop.
+      - reviewed 2026-09-25: the propose-first format is KEPT for section 5 and beyond. Learner's reason: "i feel like i
+        can explain my code more".
 
 ### 5. The contract  [ ] not started
 **Deliverable:** the engine's output becomes structured data — one JSON object per tick, readable by a human and by a machine.
 **Concepts:** data-contract, json, serialization, line-based-protocol, stdout-as-stream
+**Format:** propose-first, carried over from section 4 (kept at the 2026-09-25 review).
+**Tasks:** (stated as outcomes only — the how is the learner's to propose)
+- [x] 5.1 The engine stops talking: nothing in src/drone.c writes to the terminal, the mode change is still announced
+      when the mission runs, and `make test` output holds nothing but the suite's own lines.
+      - the printf left tick(); print_state moved to main.c with its declaration out of drone.h. main.c saves the mode
+        before tick() and announces ANY change after it (learner's choice: failsafe must be visible too), through a
+        mode_to_string() switch in main.c. First `make test` since 4.1 with no engine noise in it.
+      - mode_to_string has no default on purpose: with no default, -Wswitch fails the build if a new FlightMode gets no
+        case. The fallback return after the switch only covers out-of-range values.
+      - for 5.4: MODE_COMPLETE is never announced by the comparison, because main.c sets it itself, outside the
+        before/after window around tick(). "MISSION COMPLETE" prints separately. Two paths for one kind of event.
+      - parked (pre-existing): the main loop only stops on MODE_COMPLETE. A drone in MODE_FAILSAFE lands and then ticks
+        forever. Decide what the mission program does with a failsafe drone before section 6 depends on the stream ending.
+- [ ] 5.2 The contract is written down before any code: every field one tick carries, its type and unit, and what a
+      reader can rely on — in a place the engine and the future server both point at.
+- [ ] 5.3 One JSON object per tick: running the mission prints the drone's state as one JSON line per tick, matching
+      the written contract.
+- [ ] 5.4 The whole stream is machine-readable: waypoint arrivals, mode changes and mission end are data too, and every
+      single line the program prints parses — proven by a machine reading it, not by eye.
+- [ ] 5.5 The contract is held by the suite: a test fails if the engine's output stops matching the contract.
 
 ### 6. The server  [ ] not started
 **Deliverable:** `node server.js` launches the C engine, reads its state, and serves a blank page at localhost:3000.
