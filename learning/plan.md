@@ -58,7 +58,7 @@
       - the printf inside tick() is a known compromise: tick() now both advances the simulation and writes to the terminal, which will
         block section 4's test program from calling it quietly. Section 5's data contract is where it gets separated.
 
-### 4. Proving it's right  [ ] not started
+### 4. Proving it's right  [x] complete
 **Deliverable:** `make test` runs the assertions and prints all-pass — including "east at 10 m/s for 1 second lands at x=10".
 **Concepts:** assert, test-program, make-targets, edge-cases, regression-testing, deterministic-simulation
 **Format trial (section 4 only, agreed 2026-09-20):** learner proposes the approach FIRST, before any guidance on how.
@@ -130,8 +130,23 @@ things" — judgment is built by consequences, not by instruction. Review at the
         broke claim 7). Decide whether every claim states its mode.
       - for 4.5: claim 9's abort hid claim 10 for real. It had to be seen red by commenting claim 9's call out.
       - still open: is a grounded, unpowered drone 'failsafe' or 'off'? This is the same question as the 0.000001 % reserve.
-- [ ] 4.5 One command, whole suite, all-pass: every claim from 4.1–4.4 runs on every `make test`, and a broken engine
+- [x] 4.5 One command, whole suite, all-pass: every claim from 4.1–4.4 runs on every `make test`, and a broken engine
       is caught by it rather than by reading the terminal.
+      - assert is gone. A check(ok, description) helper prints `<description>  PASS|FAIL` in one aligned column and
+        returns 1/0; each claim returns the sum of its checks; main() adds up the claims and returns 1 if anything failed,
+        0 otherwise. Returning the raw count was rejected: only 8 bits of exit status survive, so 256 failures would read
+        as success.
+      - the design was the learner's, piece by piece (PASS/FAIL instead of abort, a failure count, the helper's inputs and
+        output, conditions passed as what SHOULD be true). The exit-status half was walked to, not proposed.
+      - two silent-lie bugs were written and caught by break checks, both the same shape: a return value dropped (main()
+        ignoring claim 7, then `failed =` overwriting instead of `+=`). -Werror cannot catch the second one.
+      - final proof: commenting out the TAKEOFF->NAVIGATE assignment failed exactly claims 7 and 8, as predicted, while
+        the engine's printf still said MODE NAVIGATE. The terminal lied; the suite did not.
+      - every claim now sets .mode explicitly; none relies on MODE_TAKEOFF being enum value 0. Learner caught that
+        claim 1 relied on it too.
+      - still open, carried forward: is a grounded, unpowered drone 'failsafe' or 'off' (same question as the 0.000001 %
+        reserve). The printf inside tick() is still due in section 5.
+      - DUE AT THE START OF THE NEXT LESSON: the section-4 format trial review (propose-first). Keep, change, or drop.
 
 ### 5. The contract  [ ] not started
 **Deliverable:** the engine's output becomes structured data — one JSON object per tick, readable by a human and by a machine.

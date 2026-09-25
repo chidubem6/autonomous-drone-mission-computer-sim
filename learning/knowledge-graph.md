@@ -84,8 +84,9 @@
 - status: practicing
 - depends-on: none
 - introduced: —
-- last-reviewed: 2026-09-16
-- evidence: 2026-09-16 built the mission-announcement line in task 3.1 incrementally — label first, then widths, then arguments — and landed a correct four-slot line (`%d` for the int index, three `%5.1f`/`%4.1f` for doubles) with matched arguments in order. En route left a `%.1f` with no argument behind it, which is the variadic hazard they already knew in theory meeting their own code. Earlier: self-reported — built a CLI number toolkit in C; 2026-09-14 wrote drone.c unaided but omitted the trailing newline the spec asked for, then added it after reasoning about why it matters downstream. Later met the variadic-function consequence: printf has no type information for its arguments, because the types are decided by a runtime string, so a wrong specifier cannot be converted or caught by the language itself. Task 1.4 went deep on formatting: used `%%` for a literal percent unprompted, predicted correctly that growing values would shift the columns, then worked through field widths over several passes — that a width is a MINIMUM and printf never truncates, that numbers right-align and text left-aligns, and that literal text between conversions is not counted in any field width. Asked good questions at each step rather than accepting the rule
+- last-reviewed: 2026-09-25
+- evidence: 2026-09-25 proposed his own way to put PASS/FAIL in one column: left-align the description with a large width. Wrote printf("%-90s PASS
+", description) himself. 2026-09-16 built the mission-announcement line in task 3.1 incrementally — label first, then widths, then arguments — and landed a correct four-slot line (`%d` for the int index, three `%5.1f`/`%4.1f` for doubles) with matched arguments in order. En route left a `%.1f` with no argument behind it, which is the variadic hazard they already knew in theory meeting their own code. Earlier: self-reported — built a CLI number toolkit in C; 2026-09-14 wrote drone.c unaided but omitted the trailing newline the spec asked for, then added it after reasoning about why it matters downstream. Later met the variadic-function consequence: printf has no type information for its arguments, because the types are decided by a runtime string, so a wrong specifier cannot be converted or caught by the language itself. Task 1.4 went deep on formatting: used `%%` for a literal percent unprompted, predicted correctly that growing values would shift the columns, then worked through field widths over several passes — that a width is a MINIMUM and printf never truncates, that numbers right-align and text left-aligns, and that literal text between conversions is not counted in any field width. Asked good questions at each step rather than accepting the rule
 
 ## floating-point-numbers
 - status: practicing
@@ -98,8 +99,8 @@
 - status: practicing
 - depends-on: compiled-vs-interpreted
 - introduced: —
-- last-reviewed: 2026-09-15
-- evidence: self-reported — compiles and runs C from the terminal with gcc; 2026-09-15 recalled the full gcc line from memory into the Makefile recipe, flags and all bar -Werror, which was restored for them; 2026-09-14 built src/drone.c in WSL with -Wall -Wextra -std=c11 and ran it. Also met the Linux/Windows difference — Linux marks a file executable with a permission bit, Windows with the .exe suffix — and asked a good unprompted follow-up about when .exe would appear
+- last-reviewed: 2026-09-24
+- evidence: 2026-09-24 review passed cold: predicted an unused variable under -Werror becomes a compile failure and that no claim runs, because there is no binary; could not recall what -Wall and -Wextra switch on, refreshed. Earlier: self-reported — compiles and runs C from the terminal with gcc; 2026-09-15 recalled the full gcc line from memory into the Makefile recipe, flags and all bar -Werror, which was restored for them; 2026-09-14 built src/drone.c in WSL with -Wall -Wextra -std=c11 and ran it. Also met the Linux/Windows difference — Linux marks a file executable with a permission bit, Windows with the .exe suffix — and asked a good unprompted follow-up about when .exe would appear
 
 ## compilation-stages
 - status: practicing
@@ -252,15 +253,15 @@
 - status: practicing
 - depends-on: test-is-a-claim
 - introduced: 2026-09-21
-- last-reviewed: 2026-09-21
-- evidence: 2026-09-21 proposed the shape before any guidance: a tests/ directory, make test compiling and running a program, pass/fail output. Chose a single test file over per-aspect files once told the split pays off only when running a subset saves time. Reasoned out unprompted that the test must link the real engine rather than a copy - when asked what a duplicated tick would report after a later bugfix, saw that the test goes stale. —
+- last-reviewed: 2026-09-25
+- evidence: 2026-09-25 (task 4.5) named the goal gap himself: of his three parked notes, 1 and 3 (abort hides later claims) block a whole-picture run. Proposed PASS/FAIL per check instead of aborting, then a failure count, then a reusable check() taking the condition and a description and returning 1/0. Chose to pass the condition as what SHOULD be true, reasoning 'easier to think for the happy path'. Asked for PASS lines too; given the 4.4 claim-9-never-called case as the reason they earn their noise. Claims 1-6 and 8-10 were converted for him on request, and he reviewed and approved the diff. 2026-09-21 proposed the shape before any guidance: a tests/ directory, make test compiling and running a program, pass/fail output. Chose a single test file over per-aspect files once told the split pays off only when running a subset saves time. Reasoned out unprompted that the test must link the real engine rather than a copy - when asked what a duplicated tick would report after a later bugfix, saw that the test goes stale. —
 
 ## test-fairness
 - status: practicing
 - depends-on: test-is-a-claim, assert
 - introduced: 2026-09-22
-- last-reviewed: 2026-09-24
-- evidence: 2026-09-23 claim 3 was green but UNFAIR: alt_after read claim 1's grounded drone, so the assert was really 10 > 0. He predicted it would fail with the descent line commented out, watched it still pass, then traced the cause himself ("alt_after is reading d instead of d_dead_drone"), fixed it, and confirmed red-then-green. Break-checked claims 4, 5, 6, 7 and 8 with a correct prediction each time (including numbers: 102 m, 97.5 m). On claim 6, his <= break still passed and he explained why unprompted (the cap trims the step to remaining = 0). He was given the principle that tests check behaviour, not code, and needed both guards broken to see red. Earlier: 2026-09-22 asked what "fair" even means, and first guessed it meant checking that no other field changed. Given the definition - a test that would fail if the engine were wrong - he applied it himself: asked whether any wrong engine could still pass while the waypoint sat at x = 10 and the expected answer was also 10, answered "a faulty engine that keeps drones at x = 10", and moved the waypoint out to 100 so the expected value cannot be copied from the target. Then proved the finished test fair by dropping CRUISE_SPEED_MPS to 5.0, watching the assertion abort, and restoring it
+- last-reviewed: 2026-09-25
+- evidence: 2026-09-25 break-checked the new suite twice with predictions. Removing the climb cap exposed that `failed = check(...)` twice keeps only the last verdict (FAIL printed, then 'all tests passed'); he named the cause, 'second check overrides it', and switched to +=. Then predicted exactly that commenting out the TAKEOFF->NAVIGATE assignment fails claims 7 and 8 and nothing else, and it did, while the engine's printf still said MODE NAVIGATE. 2026-09-23 claim 3 was green but UNFAIR: alt_after read claim 1's grounded drone, so the assert was really 10 > 0. He predicted it would fail with the descent line commented out, watched it still pass, then traced the cause himself ("alt_after is reading d instead of d_dead_drone"), fixed it, and confirmed red-then-green. Break-checked claims 4, 5, 6, 7 and 8 with a correct prediction each time (including numbers: 102 m, 97.5 m). On claim 6, his <= break still passed and he explained why unprompted (the cap trims the step to remaining = 0). He was given the principle that tests check behaviour, not code, and needed both guards broken to see red. Earlier: 2026-09-22 asked what "fair" even means, and first guessed it meant checking that no other field changed. Given the definition - a test that would fail if the engine were wrong - he applied it himself: asked whether any wrong engine could still pass while the waypoint sat at x = 10 and the expected answer was also 10, answered "a faulty engine that keeps drones at x = 10", and moved the waypoint out to 100 so the expected value cannot be copied from the target. Then proved the finished test fair by dropping CRUISE_SPEED_MPS to 5.0, watching the assertion abort, and restoring it
 
 ## test-isolation
 - status: practicing
@@ -854,8 +855,8 @@
 - status: practicing
 - depends-on: struct, undefined-behaviour
 - introduced: 2026-09-20
-- last-reviewed: 2026-09-20
-- evidence: 2026-09-20 predicted correctly, unprompted, that a field added to DroneState but left out of main()'s initializer list would come out 0, and that this made MODE_TAKEOFF the accidental default. Was then given the boundary: that guarantee belongs to the = { ... } initializer, not to structs generally - a bare local gets leftovers, = {0} zeroes everything, = { .x_m = 5.0 } zeroes everything else. Set .mode explicitly anyway rather than relying on the zero
+- last-reviewed: 2026-09-25
+- evidence: 2026-09-25 asked why claims 3-8 depended on MODE_TAKEOFF being 0 and was re-told (unnamed fields zero, enums count from 0). Decided every claim states its mode explicitly, and spotted unprompted that claim 1 relied on zero too, which the parked note had missed. The seven edits were made for him on request; the suite stayed all-PASS. 2026-09-20 predicted correctly, unprompted, that a field added to DroneState but left out of main()'s initializer list would come out 0, and that this made MODE_TAKEOFF the accidental default. Was then given the boundary: that guarantee belongs to the = { ... } initializer, not to structs generally - a bare local gets leftovers, = {0} zeroes everything, = { .x_m = 5.0 } zeroes everything else. Set .mode explicitly anyway rather than relying on the zero
 
 ## stack-memory-reuse
 - status: practicing
@@ -954,3 +955,31 @@
 - introduced: 2026-09-24
 - last-reviewed: 2026-09-24
 - evidence: 2026-09-24 reached for a 'more professional' name than MODE_NO_POWER and was given 'failsafe', plus the idea that a mode names what the drone is doing rather than why. Decided unprompted that a drone dying during takeoff should also go to failsafe. With a prompt, spotted that claims 9 and 10 put the drone on the ground (altitude 0), which is exactly the case set aside, and moved both drones into the air, including a waypoint above the claim-10 drone so it is really still taking off. Open: is a grounded drone with no power in failsafe or just 'off'? This is the same question as the 0.000001 % reserve
+
+## exit-status
+- status: practicing
+- depends-on: test-program, make-targets
+- introduced: 2026-09-25
+- last-reviewed: 2026-09-25
+- evidence: 2026-09-25 was unsure how an unattended build server learns a test failed, and was walked there: main's return value goes to the parent (make), where 0 means success and anything else means failure. Asked whether make's *** line comes from compiling or running; it comes from running. Then concluded unaided that a suite printing FAIL but returning 0 means 'no faults returned even when they technically did', proposed returning the failure count, and when told only 8 bits survive, found that 256 failures would wrap to 0. Wrote main() himself with a failures count and `if (failures) return 1; else return 0;`, then predicted before running that claim 7's verdict was being discarded because main never stored it. Also watched make report its own Error 1 -> exit 2.
+
+## test-helper-function
+- status: practicing
+- depends-on: functions-over-main, exit-status
+- introduced: 2026-09-25
+- last-reviewed: 2026-09-25
+- evidence: 2026-09-25 asked whether assert's abort could be prevented; told NDEBUG deletes the checks, and real frameworks write their own non-aborting check. When the repeated if-print-set block was put to him, specified the helper himself: the condition, a description, and a 1/0 return. Wrote the body of check() unaided and correctly. Dropped check()'s return twice (bare call, then `failed =` overwriting); both were caught by running it, not by reading.
+
+## string-parameters
+- status: introduced
+- depends-on: pointers, const-correctness
+- introduced: 2026-09-25
+- last-reviewed: 2026-09-25
+- evidence: 2026-09-25 told a C string is passed as const char * (a pointer to its first character, read-only here) and printed with %s; used it correctly in check(). Not yet explained back.
+
+## build-server
+- status: introduced
+- depends-on: exit-status
+- introduced: 2026-09-25
+- last-reviewed: 2026-09-25
+- evidence: 2026-09-25 asked what a build server is; told it is a machine that builds unattended and listens only to exit codes. Section 8's Render deploy will run make inside Docker, and a nonzero step stops the deploy.
