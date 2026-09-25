@@ -190,8 +190,8 @@
 - status: introduced
 - depends-on: fixed-timestep
 - introduced: 2026-09-22
-- last-reviewed: 2026-09-22
-- evidence: named while choosing the test tolerance - the engine has no randomness and no sensors, so 10 m/s for 1 s is exactly 10 m by hand, which is why any difference above binary rounding means the engine is wrong rather than imprecise. Explained to him; not yet demonstrated by him
+- last-reviewed: 2026-09-25
+- evidence: named while choosing the test tolerance - the engine has no randomness and no sensors, so 10 m/s for 1 s is exactly 10 m by hand, which is why any difference above binary rounding means the engine is wrong rather than imprecise. Explained to him; not yet demonstrated by him 2026-09-25 picked mission time over wall-clock time for the contract but said "not sure what goes wrong"; given the reason (a test needs a known expected value, and wall clock changes every run). Picked the right option but could not give the reason yet.
 
 ## tick-rate-vs-update-rate
 - status: introduced
@@ -211,8 +211,8 @@
 - status: practicing
 - depends-on: vectors-and-distance
 - introduced: 2026-09-16
-- last-reviewed: 2026-09-16
-- evidence: 2026-09-17 task 3.4 — wrote the sin/cos movement lines and the degrees-to-radians conversion (the inverse of 3.3's, which had been given to them), all three correct. Predicted the overshoot before running: "it arrives but keeps going then turns back around", which is exactly what happened — the bearing flipping 14.0 -> 194.0 and oscillating forever. Earlier, task 3.3. Wrote the negative-angle fold themselves (`if (degrees < 0) degrees += 360;`) and the return, after the -90-is-also-270 framing; the degrees conversion line itself was given as a hint after a long stall. Predicted the heading to WP0 (10 east, 40 north) as "around 90 degrees, top right quadrant" — quadrant right, scale wrong; when asked which axis dominates, corrected unprompted to "below 45". Real answer 14.0 deg. Also extended the telemetry printf to a five-argument line with a second function call in it, unaided
+- last-reviewed: 2026-09-25
+- evidence: 2026-09-17 task 3.4 — wrote the sin/cos movement lines and the degrees-to-radians conversion (the inverse of 3.3's, which had been given to them), all three correct. Predicted the overshoot before running: "it arrives but keeps going then turns back around", which is exactly what happened — the bearing flipping 14.0 -> 194.0 and oscillating forever. Earlier, task 3.3. Wrote the negative-angle fold themselves (`if (degrees < 0) degrees += 360;`) and the return, after the -90-is-also-270 framing; the degrees conversion line itself was given as a hint after a long stall. Predicted the heading to WP0 (10 east, 40 north) as "around 90 degrees, top right quadrant" — quadrant right, scale wrong; when asked which axis dominates, corrected unprompted to "below 45". Real answer 14.0 deg. Also extended the telemetry printf to a five-argument line with a second function call in it, unaided 2026-09-25 review passed: heading 180 -> y_m changes and goes negative, x_m untouched, from memory.
 
 ## waypoint-list
 - status: practicing
@@ -302,8 +302,8 @@
 - status: introduced
 - depends-on: none
 - introduced: 2026-09-13
-- last-reviewed: 2026-09-13
-- evidence: chose the two-program split over a single program after seeing the tradeoff; understood the engine flies the drone and knows nothing about the internet
+- last-reviewed: 2026-09-25
+- evidence: chose the two-program split over a single program after seeing the tradeoff; understood the engine flies the drone and knows nothing about the internet 2026-09-25 asked "the server runs the c program? ... are we making a web server?" — the picture had faded since planning day. Given the three-box diagram (C prints JSON lines -> Node child process reads stdout -> WebSocket -> page). Due for review before section 6.
 
 ## stdout-as-stream
 - status: introduced
@@ -327,18 +327,18 @@
 - evidence: worked out unprompted that the server runs the engine; consequence noted — if the server dies the engine goes with it, and deployment ships one thing
 
 ## data-contract
-- status: introduced
+- status: practicing
 - depends-on: process-architecture-two-programs
 - introduced: 2026-09-25
 - last-reviewed: 2026-09-25
-- evidence: trunk component #5 — both sides must agree on field names and units or nothing on screen moves 2026-09-25 first real contact: asked unprompted "who are we announcing to when we transition" - the question the contract answers. Agreed the mode must travel as text, not as an enum number whose meaning lives in drone.h.
+- evidence: trunk component #5 — both sides must agree on field names and units or nothing on screen moves 2026-09-25 first real contact: asked unprompted "who are we announcing to when we transition" - the question the contract answers. Agreed the mode must travel as text, not as an enum number whose meaning lives in drone.h. 2026-09-25 task 5.2 — proposed the first fields themselves; accepted the mode travels as a string after reasoning that an enum number would be read wrongly at runtime (missed that insertion shifts every later value — shown the v1/v2 table). Chose mission time over wall clock but could not say why until given the determinism argument for 5.5. Wrote "every line carries every field" as the second promise after being led to what a missing key does in JS. Raised speed-vs-velocity unprompted, which exposed that speed and distance are both horizontal-only; renamed to horizontal_speed_mps and fixed the distance meaning. Asked for the architecture mid-task — the engine -> server -> page pipeline was not in their head before today.
 
 ## json
-- status: seed
+- status: practicing
 - depends-on: data-contract
-- introduced: —
-- last-reviewed: —
-- evidence: —
+- introduced: 2026-09-25
+- last-reviewed: 2026-09-25
+- evidence: 2026-09-25 task 5.2 — given the syntax rules (quoted keys, bare numbers, no trailing comma). Wrote seven entries of the example line with correct syntax; left a stray "altitude": 0 from the old name (different key, not a duplicate — the tutor first framed it wrongly as a duplicate and corrected itself). The last three entries and the closing brace were written for them, as agreed. Told JSON.parse keeps the last of two duplicate keys silently; not yet checked.
 
 ## serialization
 - status: seed
@@ -449,8 +449,8 @@
 - status: introduced
 - depends-on: tick-rate-vs-update-rate
 - introduced: 2026-09-13
-- last-reviewed: 2026-09-13
-- evidence: a dashboard may be stale (showing something up to 200 ms old) but should never be wrong (showing something that never happened); stale is a tuning knob, wrong is a bug
+- last-reviewed: 2026-09-25
+- evidence: a dashboard may be stale (showing something up to 200 ms old) but should never be wrong (showing something that never happened); stale is a tuning knob, wrong is a bug 2026-09-25 proposed "a timestamp" for telling fresh from stale; then offered "that it is current" as a promise a line can make — corrected: the line cannot vouch for itself, the reader judges freshness from mission_time_s.
 
 ## event-log
 - status: seed
@@ -705,11 +705,11 @@
 - evidence: watched the battery reach -29 % and identified correctly that the arithmetic was fine and the model was not. Wrote the lower-bound clamp. The general idea — subtraction knows nothing about physical limits, so they have to be stated — was given. Upper bound (battery cannot exceed 100) is not yet guarded; nothing adds charge yet, so it comes due if a charging or regeneration model ever appears. 2026-09-16 wrote the ceiling clamp to match their own floor clamp, and moved a misplaced clamp to sit after the move it guards once told what a clamp is for 2026-09-20 wrote the descent clamp with the comparison correctly reversed — coming down, 'past the target' is the other side.
 
 ## units-in-names
-- status: introduced
+- status: practicing
 - depends-on: floating-point-numbers
 - introduced: 2026-09-15
-- last-reviewed: 2026-09-15
-- evidence: a real gap surfaced. Read TICK_S (0.05) as ticks per second rather than seconds per tick, and pushed back on the correction. Landed via dimensional analysis on their own code — metres = (metres/second) x dt means dt must be seconds — plus the observation that usleep takes a duration. The rule given: "per" means divided by, so a name with no division in it should carry no "per". Same family as the day-one speed_ms / speed_mps catch, which was also missed first time
+- last-reviewed: 2026-09-25
+- evidence: a real gap surfaced. Read TICK_S (0.05) as ticks per second rather than seconds per tick, and pushed back on the correction. Landed via dimensional analysis on their own code — metres = (metres/second) x dt means dt must be seconds — plus the observation that usleep takes a duration. The rule given: "per" means divided by, so a name with no division in it should carry no "per". Same family as the day-one speed_ms / speed_mps catch, which was also missed first time 2026-09-25 named the contract fields with no units at first; when asked what a unit in the name protects against: "ensures the right unit is inferred". Then applied it to every field, and caught position_x/position_y themselves on the "read it against the rule" prompt. Also renamed a seconds field from "tick" to mission_time_s after being asked what "tick": 1.5 would mean.
 
 ## accelerating-a-slow-phenomenon
 - status: practicing
@@ -1004,3 +1004,17 @@
 - introduced: 2026-09-25
 - last-reviewed: 2026-09-25
 - evidence: third occurrence (4.5 twice, 5.1 once): called print_mode(drone.mode) with nothing receiving the result. Traced the path when asked where "NAVIGATE" went, and answered "i need to do printf". The misleading name made the bare call look complete.
+
+## speed-vs-velocity
+- status: introduced
+- depends-on: vectors-and-distance, heading-and-direction
+- introduced: 2026-09-25
+- last-reviewed: 2026-09-25
+- evidence: asked unprompted "why not velocity" and whether a drone climbing straight up has speed 0. Given: speed is a size, velocity is size + direction; heading_deg + speed_mps already are the horizontal velocity; the engine sets speed to 0 outside NAVIGATE, so a climb reads as 0. Decided to rename the field horizontal_speed_mps and leave climb rate out of the MVP.
+
+## json-schema
+- status: seed
+- depends-on: json, data-contract
+- introduced: —
+- last-reviewed: —
+- evidence: named as the machine-checkable alternative to a Markdown contract (2026-09-25); parked — not worth a tool before the first real mismatch.

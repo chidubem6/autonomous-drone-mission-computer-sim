@@ -149,7 +149,7 @@ things" — judgment is built by consequences, not by instruction. Review at the
       - reviewed 2026-09-25: the propose-first format is KEPT for section 5 and beyond. Learner's reason: "i feel like i
         can explain my code more".
 
-### 5. The contract  [ ] not started
+### 5. The contract  [ ] in progress
 **Deliverable:** the engine's output becomes structured data — one JSON object per tick, readable by a human and by a machine.
 **Concepts:** data-contract, json, serialization, line-based-protocol, stdout-as-stream
 **Format:** propose-first, carried over from section 4 (kept at the 2026-09-25 review).
@@ -165,8 +165,19 @@ things" — judgment is built by consequences, not by instruction. Review at the
         before/after window around tick(). "MISSION COMPLETE" prints separately. Two paths for one kind of event.
       - parked (pre-existing): the main loop only stops on MODE_COMPLETE. A drone in MODE_FAILSAFE lands and then ticks
         forever. Decide what the mission program does with a failsafe drone before section 6 depends on the stream ending.
-- [ ] 5.2 The contract is written down before any code: every field one tick carries, its type and unit, and what a
+- [x] 5.2 The contract is written down before any code: every field one tick carries, its type and unit, and what a
       reader can rely on — in a place the engine and the future server both point at.
+      - docs/telemetry-contract.md: ten fields, each with its unit in its name (mission_time_s, flight_mode,
+        position_x_m, position_y_m, altitude_m, heading_deg, horizontal_speed_mps, battery_pct, current_waypoint,
+        distance_from_waypoint_m); two promises (a newline ends every line, every line carries every field); one example.
+      - mode travels as a string: an enum number shifts meaning when a mode is inserted, and the server would show the
+        wrong thing without complaining. Mission time rather than wall-clock time, so 5.5's test has a known expected value.
+      - Markdown doc over a .js file (a JS file would belong to the server, and C cannot read it) and over JSON Schema
+        (a tool before the first mismatch). main.c points at the doc from above print_state.
+      - learner's question exposed that speed and distance are both horizontal only -> renamed horizontal_speed_mps,
+        distance meaning made explicit. Climb rate left out of the MVP by choice; adding a field later does not break a reader.
+      - for 5.3: the pointer comment above print_state is not true until print_state prints the contract.
+      - for 5.4: the "Not covered yet" section of the doc lists what still prints as plain text.
 - [ ] 5.3 One JSON object per tick: running the mission prints the drone's state as one JSON line per tick, matching
       the written contract.
 - [ ] 5.4 The whole stream is machine-readable: waypoint arrivals, mode changes and mission end are data too, and every

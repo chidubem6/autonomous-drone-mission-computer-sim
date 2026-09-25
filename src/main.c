@@ -20,6 +20,7 @@
 #define MISSION_WAYPOINT_COUNT 3
 
 /* Print one line describing everything the drone knows about itself. */
+/* Output format defined in docs/telemetry-contract.md */
 void print_state(const DroneState *d) {
     printf("POS %6.1f,%6.1f   ALT %5.1f m   HDG %5.1f deg   SPD %6.1f m/s   BAT %5.1f %%\n", 
         d->x_m, d->y_m, d->altitude_m, d->heading_deg, d->speed_mps, d->battery_percent);
