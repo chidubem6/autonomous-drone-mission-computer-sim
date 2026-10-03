@@ -212,8 +212,14 @@ things" — judgment is built by consequences, not by instruction. Review at the
 **Concepts:** nodejs, npm-and-package-json, child-process, stdin-stdout-pipes, http-server, ports, static-file-serving
 
 ### 7. The dashboard  [ ] not started
-**Deliverable:** open that page and watch the mission-control state block update live as the drone flies.
-**Concepts:** websocket, event-driven-javascript, dom-manipulation, rendering-from-state, css-layout, stale-vs-wrong
+**Deliverable:** open that page and watch the mission-control state block update live as the drone flies — and see it
+fly: a top-down view where a dot moves toward three waypoint circles, each changing colour when reached.
+**Concepts:** websocket, event-driven-javascript, dom-manipulation, rendering-from-state, css-layout, stale-vs-wrong, canvas-drawing
+**Added 2026-10-03:** the top-down view, at the learner's request ("i wanted to see it move"). He asked about SDL first;
+rejected because an SDL window only exists on the machine running it and cannot be served at a URL. Scope is the minimum:
+drone dot from position_x_m/position_y_m on each tick, waypoints from mission_init, colour change on waypoint_reached.
+Pan, zoom and a flight trail stay in the v2 map view. Trade named and accepted: section 7 grows by one task, so section 8's
+URL arrives a session or two later.
 
 ### 8. Going live  [ ] not started
 **Deliverable:** a URL. Send it to someone and they watch the drone fly from their phone.
