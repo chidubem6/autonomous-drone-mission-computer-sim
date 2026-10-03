@@ -21,8 +21,8 @@
 - status: practicing
 - depends-on: manual-memory-management
 - introduced: —
-- last-reviewed: 2026-09-16
-- evidence: self-reported — currently attempting to implement pointers and reading up on them. 2026-09-14 asked directly about `*` in declarations vs expressions and about `struct Node *next`; was given the address/dereference distinction, the `->` shorthand, and the pass-by-value argument for why section 2's tick function must take a DroneState *. Then wrote print_state(const DroneState *d) themselves — six `d->field` reads and a `print_state(&drone)` call site, all correct first time, no prompting on the `&`. 2026-09-15 wrote the tick signature `void tick(DroneState *d, ...)` from the print_state pattern, and every call site as `tick(&drone, 0.05)` — six correct `&` uses, no prompting. 2026-09-15 wrote the clamp as `if (battery < 0)` — a bare name with nothing in scope — and corrected to `d->battery_percent` once reminded that only d and dt exist inside tick(). Struct fields are not loose variables; the pointer is the only route in. 2026-09-16 wrote `D->altitude_m` with a capital D; C is case-sensitive and there is no such name
+- last-reviewed: 2026-10-01
+- evidence: self-reported — currently attempting to implement pointers and reading up on them. 2026-09-14 asked directly about `*` in declarations vs expressions and about `struct Node *next`; was given the address/dereference distinction, the `->` shorthand, and the pass-by-value argument for why section 2's tick function must take a DroneState *. Then wrote print_state(const DroneState *d) themselves — six `d->field` reads and a `print_state(&drone)` call site, all correct first time, no prompting on the `&`. 2026-09-15 wrote the tick signature `void tick(DroneState *d, ...)` from the print_state pattern, and every call site as `tick(&drone, 0.05)` — six correct `&` uses, no prompting. 2026-09-15 wrote the clamp as `if (battery < 0)` — a bare name with nothing in scope — and corrected to `d->battery_percent` once reminded that only d and dt exist inside tick(). Struct fields are not loose variables; the pointer is the only route in. 2026-09-16 wrote `D->altitude_m` with a capital D; C is case-sensitive and there is no such name 2026-10-01 spaced review (15 days): passed in part — said by-value makes a copy inside the function and that `.` replaces `->` (guessed correctly that -> means go to the address, then take the field); missed that the call site drops the `&`. Then challenged why print_state takes a pointer at all when it only reads — a fair point; told by-value would be fine for a 56-byte struct and the pointer is convention + consistency. 2026-10-02 did not follow array-to-pointer conversion at first ('i dont get what you mean'); needed the memory-address picture, then asked why &mission[current_wp] needs & when mission does not — the right contrast. Chose on his own to pass &mission[current_wp] rather than the whole array, and renamed the parameter target.
 
 ## const-correctness
 - status: understood
@@ -92,8 +92,8 @@
 - status: practicing
 - depends-on: none
 - introduced: 2026-09-15
-- last-reviewed: 2026-09-22
-- evidence: met doubles as the type for every physical quantity in DroneState, and the reason integers were wrong for a 0.05 s tick. 2026-09-20 met NaN for the first time via the ghost experiment, then answered the follow-up correctly: asked what a clamp written as if (d->altitude_m > target->altitude_m) does when altitude is NaN, said the branch does not fire because the comparison is false. Was shown the sharper version - every branch in the chain declines and the empty hold else catches it, so the drone reports holding steady at an altitude of NaN. The general rule (NaN makes every comparison false, so guards fail open) landed; isnan() parked for section 4. 2026-09-22 saw the storage approximation produce a visibly wrong answer in his own test and asked for it in plain terms - got the kitchen-scale framing: a stored decimal is the nearest value the hardware can represent, so every arithmetic step can nudge the answer by a sliver
+- last-reviewed: 2026-10-02
+- evidence: met doubles as the type for every physical quantity in DroneState, and the reason integers were wrong for a 0.05 s tick. 2026-09-20 met NaN for the first time via the ghost experiment, then answered the follow-up correctly: asked what a clamp written as if (d->altitude_m > target->altitude_m) does when altitude is NaN, said the branch does not fire because the comparison is false. Was shown the sharper version - every branch in the chain declines and the empty hold else catches it, so the drone reports holding steady at an altitude of NaN. The general rule (NaN makes every comparison false, so guards fail open) landed; isnan() parked for section 4. 2026-09-22 saw the storage approximation produce a visibly wrong answer in his own test and asked for it in plain terms - got the kitchen-scale framing: a stored decimal is the nearest value the hardware can represent, so every arithmetic step can nudge the answer by a sliver 2026-10-02 predicted that adding 0.05 sixty times gives exactly 3.0 ('i would expect it to, but i also remember something weird happens'), asked how to test it directly, wrote a throwaway /tmp/drift.c himself and saw 2.99999999999999733546 / FALSE. Given why (0.05 repeats in binary, each add rounds). Answered 'int' for a type that never rounds on +1 and 'multiply by TICK_S' to get seconds — one rounding instead of sixty.
 
 ## compiling-c
 - status: practicing
@@ -309,8 +309,8 @@
 - status: introduced
 - depends-on: none
 - introduced: 2026-09-13
-- last-reviewed: 2026-09-25
-- evidence: explained that a program writes to standard output without knowing where it lands; the terminal is a default, not a law 2026-09-25 was told the reader of the output becomes the section-6 server, a machine reading line by line.
+- last-reviewed: 2026-10-02
+- evidence: explained that a program writes to standard output without knowing where it lands; the terminal is a default, not a law 2026-09-25 was told the reader of the output becomes the section-6 server, a machine reading line by line. 2026-10-02 met 'Broken pipe' from `make run | head -12`; told it is head closing the reading end so the writer is stopped — a preview of section 6, where the server is the reader.
 
 ## stdin-stdout-pipes
 - status: introduced
@@ -330,29 +330,29 @@
 - status: practicing
 - depends-on: process-architecture-two-programs
 - introduced: 2026-09-25
-- last-reviewed: 2026-09-25
-- evidence: trunk component #5 — both sides must agree on field names and units or nothing on screen moves 2026-09-25 first real contact: asked unprompted "who are we announcing to when we transition" - the question the contract answers. Agreed the mode must travel as text, not as an enum number whose meaning lives in drone.h. 2026-09-25 task 5.2 — proposed the first fields themselves; accepted the mode travels as a string after reasoning that an enum number would be read wrongly at runtime (missed that insertion shifts every later value — shown the v1/v2 table). Chose mission time over wall clock but could not say why until given the determinism argument for 5.5. Wrote "every line carries every field" as the second promise after being led to what a missing key does in JS. Raised speed-vs-velocity unprompted, which exposed that speed and distance are both horizontal-only; renamed to horizontal_speed_mps and fixed the distance meaning. Asked for the architecture mid-task — the engine -> server -> page pipeline was not in their head before today.
+- last-reviewed: 2026-10-02
+- evidence: trunk component #5 — both sides must agree on field names and units or nothing on screen moves 2026-09-25 first real contact: asked unprompted "who are we announcing to when we transition" - the question the contract answers. Agreed the mode must travel as text, not as an enum number whose meaning lives in drone.h. 2026-09-25 task 5.2 — proposed the first fields themselves; accepted the mode travels as a string after reasoning that an enum number would be read wrongly at runtime (missed that insertion shifts every later value — shown the v1/v2 table). Chose mission time over wall clock but could not say why until given the determinism argument for 5.5. Wrote "every line carries every field" as the second promise after being led to what a missing key does in JS. Raised speed-vs-velocity unprompted, which exposed that speed and distance are both horizontal-only; renamed to horizontal_speed_mps and fixed the distance meaning. Asked for the architecture mid-task — the engine -> server -> page pipeline was not in their head before today. 2026-10-02 noticed unprompted that heading 0.0 and bearing 14.0 disagree during takeoff, asked the difference, then chose to add a bearing field to the contract rather than lose it ('it locates where a target is relative to the drone, not where the drone is heading'). Changed the contract BEFORE the code and updated the example line himself so the doc keeps its own every-field promise. Rename to bearing_to_waypoint_deg was suggested by the tutor and applied to the doc by the tutor at his request.
 
 ## json
 - status: practicing
 - depends-on: data-contract
 - introduced: 2026-09-25
-- last-reviewed: 2026-09-25
-- evidence: 2026-09-25 task 5.2 — given the syntax rules (quoted keys, bare numbers, no trailing comma). Wrote seven entries of the example line with correct syntax; left a stray "altitude": 0 from the old name (different key, not a duplicate — the tutor first framed it wrongly as a duplicate and corrected itself). The last three entries and the closing brace were written for them, as agreed. Told JSON.parse keeps the last of two duplicate keys silently; not yet checked.
+- last-reviewed: 2026-10-02
+- evidence: 2026-09-25 task 5.2 — given the syntax rules (quoted keys, bare numbers, no trailing comma). Wrote seven entries of the example line with correct syntax; left a stray "altitude": 0 from the old name (different key, not a duplicate — the tutor first framed it wrongly as a duplicate and corrected itself). The last three entries and the closing brace were written for them, as agreed. Told JSON.parse keeps the last of two duplicate keys silently; not yet checked. 2026-10-02 task 5.3 wrote the eleven-field format string in print_state himself, escaping every inner quote as \" unprompted, keys in contract order, trailing newline. Missed one key's unit suffix (bearing_to_waypoint vs _deg) and fixed it on a 'read it letter by letter against row 24' prompt.
 
 ## serialization
-- status: seed
+- status: practicing
 - depends-on: json
-- introduced: —
-- last-reviewed: —
-- evidence: —
+- introduced: 2026-10-01
+- last-reviewed: 2026-10-02
+- evidence: 2026-10-01 task 5.3 first contact: proposed renaming every field to the contract, splitting position, and taking flight_mode from mode. When asked which fields print_state could reach through d alone, named current_waypoint and distance as needing the drone and mission; missed mission time until asked where it lives ('mission time doesnt exist'). Designed the new print_state signature (d, current_wp, target, ticks) and wired both call sites; the first argument list carried a call to a non-existent mission_time_s(), d->x, and an undeclared w, all found by reading compiler errors one at a time.
 
 ## line-based-protocol
-- status: introduced
+- status: practicing
 - depends-on: data-contract
 - introduced: 2026-09-14
-- last-reviewed: 2026-09-14
-- evidence: asked what a missing newline would do to a line-reading server, answered that it would read the wrong number of lines and get a bad format — right direction, sharpened to the real failure: the newline IS the delimiter, so the reader waits forever for an end that never comes
+- last-reviewed: 2026-10-02
+- evidence: asked what a missing newline would do to a line-reading server, answered that it would read the wrong number of lines and get a bad format — right direction, sharpened to the real failure: the newline IS the delimiter, so the reader waits forever for an end that never comes 2026-10-02 read the running output against 'one tick = one line' and named the `-> WP` line as the thing breaking it ('the loop outputs the wp info'). Decided to remove it once he had worked out it carried one value (bearing) the JSON did not.
 
 ## nodejs
 - status: introduced
@@ -764,8 +764,8 @@
 - status: practicing
 - depends-on: header-files
 - introduced: 2026-09-16
-- last-reviewed: 2026-09-21
-- evidence: 2026-09-21 wrote all four engine prototypes into drone.h and found print_state and distance_to himself from the rule "does anything outside this file call it". Took three attempts on the syntax - `{`, then `{}`, then `;` - the empty-body form being the instructive miss, since `{}` is still a definition. Asked unprompted why tick could not simply be extracted into the header, which is the multiple-definition trap. task 3.2, and the strongest prediction of the journey so far. Told only that math.h holds a declaration — "sqrt takes a double and returns a double" — and asked whether make would succeed, answered unprompted: "no it wont because sqr doesnt have a defintion". Honest about the second half too ("im not sure where sqrt would have to come from"), which is what made the linker explanation land on a real gap rather than a hypothetical one
+- last-reviewed: 2026-10-02
+- evidence: 2026-09-21 wrote all four engine prototypes into drone.h and found print_state and distance_to himself from the rule "does anything outside this file call it". Took three attempts on the syntax - `{`, then `{}`, then `;` - the empty-body form being the instructive miss, since `{}` is still a definition. Asked unprompted why tick could not simply be extracted into the header, which is the multiple-definition trap. task 3.2, and the strongest prediction of the journey so far. Told only that math.h holds a declaration — "sqrt takes a double and returns a double" — and asked whether make would succeed, answered unprompted: "no it wont because sqr doesnt have a defintion". Honest about the second half too ("im not sure where sqrt would have to come from"), which is what made the linker explanation land on a real gap rather than a hypothetical one 2026-10-02 read 'implicit declaration of function mode_to_string' and diagnosed it himself — 'it's below it not above it' — but believed functions outside main have 'a global view rather than a line by line view'. Corrected: C reads top to bottom and a name exists only from its declaration onward. Chose a forward declaration over moving the function.
 
 ## linking-libraries
 - status: practicing
@@ -820,8 +820,8 @@
 - status: practicing
 - depends-on: heading-and-direction
 - introduced: 2026-09-17
-- last-reviewed: 2026-09-17
-- evidence: raised the distinction themselves, unprompted, mid-task: "shouldnt we rename and/or add the name bearing to distinguish between bearing and heading?" — a domain-vocabulary correction the lesson had not taught and the plan had not scheduled. Correct: the function computed a bearing and was named heading_to. Then asked for the difference to be spelled out, so the naming instinct arrived ahead of the full concept. Renamed to bearing_to across all four sites, and separately caught that main's printf still labelled the column HDG. Follow-up question was sharp too — whether bearing_to itself needed changing, which earned the answer that a bearing is purely positional and re-derived every tick
+- last-reviewed: 2026-10-02
+- evidence: raised the distinction themselves, unprompted, mid-task: "shouldnt we rename and/or add the name bearing to distinguish between bearing and heading?" — a domain-vocabulary correction the lesson had not taught and the plan had not scheduled. Correct: the function computed a bearing and was named heading_to. Then asked for the difference to be spelled out, so the naming instinct arrived ahead of the full concept. Renamed to bearing_to across all four sites, and separately caught that main's printf still labelled the column HDG. Follow-up question was sharp too — whether bearing_to itself needed changing, which earned the answer that a bearing is purely positional and re-derived every tick 2026-10-02 asked again what the difference is, prompted by seeing heading 0 vs bearing 14 during takeoff — not retrieved after 15 days. Re-given: heading = where the drone points, a fact about the drone; bearing = drone-to-waypoint direction, a measurement between two things; they differ in TAKEOFF because tick() does not steer until NAVIGATE.
 
 ## passing-dependencies-as-parameters
 - status: practicing
@@ -904,8 +904,8 @@
 - status: practicing
 - depends-on: interface-vs-implementation
 - introduced: 2026-09-21
-- last-reviewed: 2026-09-25
-- evidence: proposed the split himself once the multiple-definition error appeared - "the main function in drone.c should be extracted and call on the functinos that are currently in drone.c" - and worked out that main's locals move with main. Sorted the eight constants across the two files correctly, though by an "all drones vs this instance" rule rather than the decisive one (a constant lives where the code using it lives); said honestly "im not sure how to reason it. what belogns in drone.c and main.c" before getting TICK_S right anyway. 2026-09-25 proposed removing every printf from drone.c; asked why nothing in the engine should print, then proposed moving print_state to main.c himself. Detected the mode change in main.c by saving the mode before tick() and comparing after - his proposal, not prompted beyond 'what does main.c have after tick returns'. Placed mode_to_string in main.c ('naming the mode is about what gets said'), weighed drone.c, and settled it on which programs need the names today.
+- last-reviewed: 2026-10-01
+- evidence: proposed the split himself once the multiple-definition error appeared - "the main function in drone.c should be extracted and call on the functinos that are currently in drone.c" - and worked out that main's locals move with main. Sorted the eight constants across the two files correctly, though by an "all drones vs this instance" rule rather than the decisive one (a constant lives where the code using it lives); said honestly "im not sure how to reason it. what belogns in drone.c and main.c" before getting TICK_S right anyway. 2026-09-25 proposed removing every printf from drone.c; asked why nothing in the engine should print, then proposed moving print_state to main.c himself. Detected the mode change in main.c by saving the mode before tick() and comparing after - his proposal, not prompted beyond 'what does main.c have after tick returns'. Placed mode_to_string in main.c ('naming the mode is about what gets said'), weighed drone.c, and settled it on which programs need the names today. 2026-10-01 asked why print_state was moved to main.c — did not retrieve his own 5.1 decision after 6 days. Re-given. Then placed the mission clock in main.c correctly but suggested 'a tick function' to advance it, not seeing that tick() lives in the engine; after the loop was shown, chose an int counter declared before the loop and incremented inside it.
 
 ## make-dependency-graph
 - status: practicing
@@ -1018,3 +1018,17 @@
 - introduced: —
 - last-reviewed: —
 - evidence: named as the machine-checkable alternative to a Markdown contract (2026-09-25); parked — not worth a tool before the first real mismatch.
+
+## array-to-pointer-conversion
+- status: introduced
+- depends-on: pointers, arrays-of-structs
+- introduced: 2026-10-02
+- last-reviewed: 2026-10-02
+- evidence: 2026-10-02 told that passing an array passes the address of its first element, so the parameter must be a pointer (or T name[], which means the same). Did not follow the first explanation; the memory-address picture (1000/1024/1048) and the 'address of the first house on a street' framing landed. Asked whether the pointer is still needed in the parameter if C converts automatically — yes; and why &mission[current_wp] needs & — because indexing yields one struct, which does not convert. Not yet applied independently: chose to pass a single waypoint instead, which sidestepped it.
+
+## exact-counting-with-integers
+- status: practicing
+- depends-on: floating-point-numbers
+- introduced: 2026-10-02
+- last-reviewed: 2026-10-02
+- evidence: 2026-10-02 replaced a planned float accumulator with an int tick_count and mission_time_s = TICK_S * ticks after seeing his own drift experiment fail. Named the int parameter `ticks` after being asked whether `mission_time_s` told the truth about what it held.

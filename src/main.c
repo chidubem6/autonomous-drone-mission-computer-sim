@@ -19,11 +19,13 @@
    length, so the count lives here and every loop is checked against it. */
 #define MISSION_WAYPOINT_COUNT 3
 
+const char* mode_to_string(FlightMode mode);
+
 /* Print one line describing everything the drone knows about itself. */
 /* Output format defined in docs/telemetry-contract.md */
-void print_state(const DroneState *d) {
-    printf("POS %6.1f,%6.1f   ALT %5.1f m   HDG %5.1f deg   SPD %6.1f m/s   BAT %5.1f %%\n", 
-        d->x_m, d->y_m, d->altitude_m, d->heading_deg, d->speed_mps, d->battery_percent);
+void print_state(const DroneState *d, int current_wp, const Waypoint *target, int ticks ) {
+    printf("{\"mission_time_s\": %.2f, \"flight_mode\": \"%s\", \"position_x_m\": %.1f, \"position_y_m\": %.1f, \"altitude_m\": %.1f, \"heading_deg\": %.1f, \"horizontal_speed_mps\": %.1f, \"battery_pct\": %.2f, \"current_waypoint\": %d, \"distance_from_waypoint_m\": %.2f, \"bearing_to_waypoint_deg\": %.1f}\n", 
+        TICK_S * ticks, mode_to_string(d->mode), d->x_m, d->y_m, d->altitude_m, d->heading_deg, d->speed_mps, d->battery_percent, current_wp, distance_to(d, target), bearing_to(d, target));
 }
 
 const char* mode_to_string(FlightMode mode) {
@@ -74,16 +76,17 @@ int main(void) {
 
     }
 
-    print_state(&drone);
+    int tick_count = 0;
+    print_state(&drone, current_wp, &mission[current_wp], tick_count);
 
     while(drone.mode != MODE_COMPLETE ) {
         FlightMode prev_mode = drone.mode;
         tick(&drone, &mission[current_wp], TICK_S);
+        tick_count++;
         if (drone.mode != prev_mode) {
             printf("%s\n", mode_to_string(drone.mode));
         }
-        print_state(&drone);
-        printf("   -> WP%d   %6.1f m   BRG %5.1f deg\n", current_wp, distance_to(&drone, &mission[current_wp]), bearing_to(&drone, &mission[current_wp]));
+        print_state(&drone, current_wp, &mission[current_wp], tick_count);
 
         /* Arrival: close enough to call this waypoint reached? */
         if (distance_to(&drone, &mission[current_wp]) <= ARRIVAL_RADIUS_M) {

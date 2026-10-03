@@ -178,8 +178,16 @@ things" — judgment is built by consequences, not by instruction. Review at the
         distance meaning made explicit. Climb rate left out of the MVP by choice; adding a field later does not break a reader.
       - for 5.3: the pointer comment above print_state is not true until print_state prints the contract.
       - for 5.4: the "Not covered yet" section of the doc lists what still prints as plain text.
-- [ ] 5.3 One JSON object per tick: running the mission prints the drone's state as one JSON line per tick, matching
+- [x] 5.3 One JSON object per tick: running the mission prints the drone's state as one JSON line per tick, matching
       the written contract.
+      - print_state(d, current_wp, target, ticks): three of the values are not in DroneState, so the program passes them.
+        Passes one waypoint (&mission[current_wp]), named target, rather than the whole array.
+      - mission clock is an int tick_count in main(); seconds = TICK_S * ticks. Learner's own /tmp/drift.c showed sixty
+        additions of 0.05 giving 2.99999999999999733546.
+      - contract grew to eleven fields: bearing_to_waypoint_deg, added after the learner saw heading 0 vs bearing 14 in
+        takeoff. The `-> WP` line is deleted; full run = 400 JSON lines, make test all-pass.
+      - for 5.4: still plain text in the stream: the startup header (DRONE-01 online, MISSION, WP0-2), the mode name on
+        change, REACHED WPn, MISSION COMPLETE.
 - [ ] 5.4 The whole stream is machine-readable: waypoint arrivals, mode changes and mission end are data too, and every
       single line the program prints parses — proven by a machine reading it, not by eye.
 - [ ] 5.5 The contract is held by the suite: a test fails if the engine's output stops matching the contract.

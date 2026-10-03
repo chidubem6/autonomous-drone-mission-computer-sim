@@ -21,6 +21,7 @@ Every tick, the mission program prints one JSON object on one line to stdout.
 | battery_pct | number | percent | battery charge remaining, 0 to 100 |
 | current_waypoint | number | index | which waypoint the drone is flying to; the first is 0 |
 | distance_from_waypoint_m | number | metres | horizontal straight-line distance to that waypoint, ignoring altitude |
+| bearing_to_waypoint_deg | number | degrees | direction from the drone to that waypoint; same convention as heading_deg |
 
 ## What a reader can rely on
 
@@ -32,7 +33,7 @@ A reader is any program consuming these lines: the server, or the tests.
 ## Example
 
 ```json
-{"mission_time_s": 3.00, "flight_mode": "TAKEOFF", "position_x_m": 0.0, "position_y_m": 0.0, "altitude_m": 6.0, "heading_deg": 0.0, "horizontal_speed_mps": 0.0, "battery_pct": 99.75, "current_waypoint": 0, "distance_from_waypoint_m": 41.23}
+{"mission_time_s": 3.00, "flight_mode": "TAKEOFF", "position_x_m": 0.0, "position_y_m": 0.0, "altitude_m": 6.0, "heading_deg": 0.0, "horizontal_speed_mps": 0.0, "battery_pct": 99.75, "current_waypoint": 0, "distance_from_waypoint_m": 41.23, "bearing_to_waypoint_deg": 14.0}
 ```
 
 ## Not covered yet
