@@ -188,8 +188,23 @@ things" — judgment is built by consequences, not by instruction. Review at the
         takeoff. The `-> WP` line is deleted; full run = 400 JSON lines, make test all-pass.
       - for 5.4: still plain text in the stream: the startup header (DRONE-01 online, MISSION, WP0-2), the mode name on
         change, REACHED WPn, MISSION COMPLETE.
-- [ ] 5.4 The whole stream is machine-readable: waypoint arrivals, mode changes and mission end are data too, and every
+- [x] 5.4 The whole stream is machine-readable: waypoint arrivals, mode changes and mission end are data too, and every
       single line the program prints parses — proven by a machine reading it, not by eye.
+      - every line now leads with an `event` field: tick, drone_activated, mission_init, mode_change, waypoint_reached,
+        mission_complete, each carrying mission_time_s. The contract's promise is now 'every line has an event field and
+        the fields for that event'; one table per event in docs/telemetry-contract.md, contract committed before the code.
+      - mission end is its own mission_complete event, not a mode_change: main.c sets MODE_COMPLETE outside the window the
+        before/after comparison watches (closes the 5.1 note). mode_change still lists COMPLETE as an allowed value that is
+        never emitted — tidy in 5.5 if it matters.
+      - mission_init carries the waypoints as named objects and NO count field: a JS array knows its own length.
+      - tests/check_json_lines.py (Python, already in WSL; Node arrives in section 6) checks every line parses, reports
+        every bad one, exits 1/0. First version printed errors then 'all lines parse' with exit 0 — caught by his own break check.
+      - found by the checker: `make run` pipes make's own echoed commands (mkdir, gcc, ./build/drone) into the stream.
+        The server in section 6 must launch ./build/drone directly.
+      - for 5.5: the checker is not in `make test` yet, and the mission takes ~20 s of real time because of usleep — a
+        test that runs the whole mission would be slow. Also: on empty input `number` is never set, so the success print
+        would crash; an empty stream is a real failure case.
+      - still parked: a drone in MODE_FAILSAFE never ends the loop.
 - [ ] 5.5 The contract is held by the suite: a test fails if the engine's output stops matching the contract.
 
 ### 6. The server  [ ] not started

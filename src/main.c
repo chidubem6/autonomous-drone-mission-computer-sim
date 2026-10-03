@@ -24,7 +24,7 @@ const char* mode_to_string(FlightMode mode);
 /* Print one line describing everything the drone knows about itself. */
 /* Output format defined in docs/telemetry-contract.md */
 void print_state(const DroneState *d, int current_wp, const Waypoint *target, int ticks ) {
-    printf("{\"mission_time_s\": %.2f, \"flight_mode\": \"%s\", \"position_x_m\": %.1f, \"position_y_m\": %.1f, \"altitude_m\": %.1f, \"heading_deg\": %.1f, \"horizontal_speed_mps\": %.1f, \"battery_pct\": %.2f, \"current_waypoint\": %d, \"distance_from_waypoint_m\": %.2f, \"bearing_to_waypoint_deg\": %.1f}\n", 
+    printf("{\"event\": \"tick\", \"mission_time_s\": %.2f, \"flight_mode\": \"%s\", \"position_x_m\": %.1f, \"position_y_m\": %.1f, \"altitude_m\": %.1f, \"heading_deg\": %.1f, \"horizontal_speed_mps\": %.1f, \"battery_pct\": %.2f, \"current_waypoint\": %d, \"distance_from_waypoint_m\": %.2f, \"bearing_to_waypoint_deg\": %.1f}\n", 
         TICK_S * ticks, mode_to_string(d->mode), d->x_m, d->y_m, d->altitude_m, d->heading_deg, d->speed_mps, d->battery_percent, current_wp, distance_to(d, target), bearing_to(d, target));
 }
 
@@ -67,16 +67,14 @@ int main(void) {
 
     int current_wp = 0;
 
-    printf("DRONE-01 online\n");
-
-    /* Announce the mission before flying it. */
-    printf("MISSION %d WAYPOINTS\n", MISSION_WAYPOINT_COUNT);
-    for (int i = 0; i < MISSION_WAYPOINT_COUNT; i++) {
-        printf("WP%d   x %5.1f   y %5.1f   alt %4.1f\n", i, mission[i].x_m, mission[i].y_m, mission[i].altitude_m);
-
-    }
-
     int tick_count = 0;
+    printf("{\"event\": \"drone_activated\", \"mission_time_s\": %.2f, \"drone_name\": \"DRONE-01\"}\n", TICK_S * tick_count);
+
+    printf("{\"event\": \"mission_init\", \"mission_time_s\": %.2f, \"waypoints\": [", TICK_S * tick_count);
+    for (int i = 0; i < MISSION_WAYPOINT_COUNT - 1; i++) {
+        printf("{\"x_m\": %.1f , \"y_m\": %.1f , \"altitude_m\": %.1f}, ", mission[i].x_m, mission[i].y_m, mission[i].altitude_m);
+    }
+    printf("{\"x_m\": %.1f, \"y_m\": %.1f, \"altitude_m\": %.1f}]}\n", mission[MISSION_WAYPOINT_COUNT - 1].x_m, mission[MISSION_WAYPOINT_COUNT - 1].y_m, mission[MISSION_WAYPOINT_COUNT - 1].altitude_m);
     print_state(&drone, current_wp, &mission[current_wp], tick_count);
 
     while(drone.mode != MODE_COMPLETE ) {
@@ -84,18 +82,18 @@ int main(void) {
         tick(&drone, &mission[current_wp], TICK_S);
         tick_count++;
         if (drone.mode != prev_mode) {
-            printf("%s\n", mode_to_string(drone.mode));
+            printf("{\"event\": \"mode_change\", \"mission_time_s\": %.2f, \"previous_mode\": \"%s\", \"new_mode\": \"%s\"}\n", TICK_S * tick_count, mode_to_string(prev_mode), mode_to_string(drone.mode));
         }
         print_state(&drone, current_wp, &mission[current_wp], tick_count);
 
         /* Arrival: close enough to call this waypoint reached? */
         if (distance_to(&drone, &mission[current_wp]) <= ARRIVAL_RADIUS_M) {
-            printf("REACHED WP%d\n", current_wp);
+            printf("{\"event\": \"waypoint_reached\", \"mission_time_s\": %.2f, \"waypoint\": %d}\n", TICK_S * tick_count, current_wp);
 
             current_wp++;
 
             if (current_wp == MISSION_WAYPOINT_COUNT) {
-                printf("MISSION COMPLETE\n");
+                printf("{\"event\": \"mission_complete\", \"mission_time_s\": %.2f}\n", TICK_S * tick_count);
                 drone.mode = MODE_COMPLETE;
             } 
 

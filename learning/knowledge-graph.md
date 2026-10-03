@@ -306,11 +306,11 @@
 - evidence: chose the two-program split over a single program after seeing the tradeoff; understood the engine flies the drone and knows nothing about the internet 2026-09-25 asked "the server runs the c program? ... are we making a web server?" — the picture had faded since planning day. Given the three-box diagram (C prints JSON lines -> Node child process reads stdout -> WebSocket -> page). Due for review before section 6.
 
 ## stdout-as-stream
-- status: introduced
+- status: practicing
 - depends-on: none
 - introduced: 2026-09-13
-- last-reviewed: 2026-10-02
-- evidence: explained that a program writes to standard output without knowing where it lands; the terminal is a default, not a law 2026-09-25 was told the reader of the output becomes the section-6 server, a machine reading line by line. 2026-10-02 met 'Broken pipe' from `make run | head -12`; told it is head closing the reading end so the writer is stopped — a preview of section 6, where the server is the reader.
+- last-reviewed: 2026-10-03
+- evidence: explained that a program writes to standard output without knowing where it lands; the terminal is a default, not a law 2026-09-25 was told the reader of the output becomes the section-6 server, a machine reading line by line. 2026-10-02 met 'Broken pipe' from `make run | head -12`; told it is head closing the reading end so the writer is stopped — a preview of section 6, where the server is the reader. 2026-10-03 first said a checker 'would have to read the terminal'; when asked what head read in `make run | head -6`, answered that make run's output was passed into head, which writes to the terminal. Then saw his own checker flag make's echoed recipe lines (mkdir, gcc, ./build/drone) as invalid JSON, and asked why the bad line moved from 4 to 2 between runs — make only echoes the commands it actually runs.
 
 ## stdin-stdout-pipes
 - status: introduced
@@ -330,15 +330,15 @@
 - status: practicing
 - depends-on: process-architecture-two-programs
 - introduced: 2026-09-25
-- last-reviewed: 2026-10-02
-- evidence: trunk component #5 — both sides must agree on field names and units or nothing on screen moves 2026-09-25 first real contact: asked unprompted "who are we announcing to when we transition" - the question the contract answers. Agreed the mode must travel as text, not as an enum number whose meaning lives in drone.h. 2026-09-25 task 5.2 — proposed the first fields themselves; accepted the mode travels as a string after reasoning that an enum number would be read wrongly at runtime (missed that insertion shifts every later value — shown the v1/v2 table). Chose mission time over wall clock but could not say why until given the determinism argument for 5.5. Wrote "every line carries every field" as the second promise after being led to what a missing key does in JS. Raised speed-vs-velocity unprompted, which exposed that speed and distance are both horizontal-only; renamed to horizontal_speed_mps and fixed the distance meaning. Asked for the architecture mid-task — the engine -> server -> page pipeline was not in their head before today. 2026-10-02 noticed unprompted that heading 0.0 and bearing 14.0 disagree during takeoff, asked the difference, then chose to add a bearing field to the contract rather than lose it ('it locates where a target is relative to the drone, not where the drone is heading'). Changed the contract BEFORE the code and updated the example line himself so the doc keeps its own every-field promise. Rename to bearing_to_waypoint_deg was suggested by the tutor and applied to the doc by the tutor at his request.
+- last-reviewed: 2026-10-03
+- evidence: trunk component #5 — both sides must agree on field names and units or nothing on screen moves 2026-09-25 first real contact: asked unprompted "who are we announcing to when we transition" - the question the contract answers. Agreed the mode must travel as text, not as an enum number whose meaning lives in drone.h. 2026-09-25 task 5.2 — proposed the first fields themselves; accepted the mode travels as a string after reasoning that an enum number would be read wrongly at runtime (missed that insertion shifts every later value — shown the v1/v2 table). Chose mission time over wall clock but could not say why until given the determinism argument for 5.5. Wrote "every line carries every field" as the second promise after being led to what a missing key does in JS. Raised speed-vs-velocity unprompted, which exposed that speed and distance are both horizontal-only; renamed to horizontal_speed_mps and fixed the distance meaning. Asked for the architecture mid-task — the engine -> server -> page pipeline was not in their head before today. 2026-10-02 noticed unprompted that heading 0.0 and bearing 14.0 disagree during takeoff, asked the difference, then chose to add a bearing field to the contract rather than lose it ('it locates where a target is relative to the drone, not where the drone is heading'). Changed the contract BEFORE the code and updated the example line himself so the doc keeps its own every-field promise. Rename to bearing_to_waypoint_deg was suggested by the tutor and applied to the doc by the tutor at his request. 2026-10-03 task 5.4: proposed 'output json' for the plain-text lines, then (via autocomplete, said so honestly) the event-field shape. Asked 'how do i know to think of that' — given the reader's-seat habit. Answered that the tick line can only be recognised 'by the shape' (all eleven fields present); walked into the timestamp gap and the broken every-field promise. Rewrote the promise himself: 'every line has an event field and the fields for that event' — then dropped the second half writing it into the doc and could not see what was missing until shown side by side. Chose mission_complete over mode_change because 'it's what actually happened'. Example lines and relabelling were written for him on request.
 
 ## json
 - status: practicing
 - depends-on: data-contract
 - introduced: 2026-09-25
-- last-reviewed: 2026-10-02
-- evidence: 2026-09-25 task 5.2 — given the syntax rules (quoted keys, bare numbers, no trailing comma). Wrote seven entries of the example line with correct syntax; left a stray "altitude": 0 from the old name (different key, not a duplicate — the tutor first framed it wrongly as a duplicate and corrected itself). The last three entries and the closing brace were written for them, as agreed. Told JSON.parse keeps the last of two duplicate keys silently; not yet checked. 2026-10-02 task 5.3 wrote the eleven-field format string in print_state himself, escaping every inner quote as \" unprompted, keys in contract order, trailing newline. Missed one key's unit suffix (bearing_to_waypoint vs _deg) and fixed it on a 'read it letter by letter against row 24' prompt.
+- last-reviewed: 2026-10-03
+- evidence: 2026-09-25 task 5.2 — given the syntax rules (quoted keys, bare numbers, no trailing comma). Wrote seven entries of the example line with correct syntax; left a stray "altitude": 0 from the old name (different key, not a duplicate — the tutor first framed it wrongly as a duplicate and corrected itself). The last three entries and the closing brace were written for them, as agreed. Told JSON.parse keeps the last of two duplicate keys silently; not yet checked. 2026-10-02 task 5.3 wrote the eleven-field format string in print_state himself, escaping every inner quote as \" unprompted, keys in contract order, trailing newline. Missed one key's unit suffix (bearing_to_waypoint vs _deg) and fixed it on a 'read it letter by letter against row 24' prompt. 2026-10-03 task 5.4: split the mission_init line into before/each-pass/after only after being shown the 'before' piece; first put [ ] inside the loop. Said comma on every pass except the last unprompted (no trailing comma). Chose to loop to COUNT-1 and print the last waypoint separately — a valid alternative to an if in the loop. Predicted correctly that the last-waypoint printf inside the loop would run twice. Missed the closing } of the object and found it by reading the line end against the contract. Wrote the four remaining event printfs himself, all field names matching the contract first time. Told a JS array carries its own length, so a count field duplicates it — did not know this.
 
 ## serialization
 - status: practicing
@@ -351,8 +351,8 @@
 - status: practicing
 - depends-on: data-contract
 - introduced: 2026-09-14
-- last-reviewed: 2026-10-02
-- evidence: asked what a missing newline would do to a line-reading server, answered that it would read the wrong number of lines and get a bad format — right direction, sharpened to the real failure: the newline IS the delimiter, so the reader waits forever for an end that never comes 2026-10-02 read the running output against 'one tick = one line' and named the `-> WP` line as the thing breaking it ('the loop outputs the wp info'). Decided to remove it once he had worked out it carried one value (bearing) the JSON did not.
+- last-reviewed: 2026-10-03
+- evidence: asked what a missing newline would do to a line-reading server, answered that it would read the wrong number of lines and get a bad format — right direction, sharpened to the real failure: the newline IS the delimiter, so the reader waits forever for an end that never comes 2026-10-02 read the running output against 'one tick = one line' and named the `-> WP` line as the thing breaking it ('the loop outputs the wp info'). Decided to remove it once he had worked out it carried one value (bearing) the JSON did not. 2026-10-03 argued unprompted that the checker must parse line by line, not the whole output, because a broken line could be 'validated' by the next one when glued together. Told whole-output parsing fails anyway ('Extra data').
 
 ## nodejs
 - status: introduced
@@ -960,8 +960,8 @@
 - status: practicing
 - depends-on: test-program, make-targets
 - introduced: 2026-09-25
-- last-reviewed: 2026-09-25
-- evidence: 2026-09-25 was unsure how an unattended build server learns a test failed, and was walked there: main's return value goes to the parent (make), where 0 means success and anything else means failure. Asked whether make's *** line comes from compiling or running; it comes from running. Then concluded unaided that a suite printing FAIL but returning 0 means 'no faults returned even when they technically did', proposed returning the failure count, and when told only 8 bits survive, found that 256 failures would wrap to 0. Wrote main() himself with a failures count and `if (failures) return 1; else return 0;`, then predicted before running that claim 7's verdict was being discarded because main never stored it. Also watched make report its own Error 1 -> exit 2.
+- last-reviewed: 2026-10-03
+- evidence: 2026-09-25 was unsure how an unattended build server learns a test failed, and was walked there: main's return value goes to the parent (make), where 0 means success and anything else means failure. Asked whether make's *** line comes from compiling or running; it comes from running. Then concluded unaided that a suite printing FAIL but returning 0 means 'no faults returned even when they technically did', proposed returning the failure count, and when told only 8 bits survive, found that 256 failures would wrap to 0. Wrote main() himself with a failures count and `if (failures) return 1; else return 0;`, then predicted before running that claim 7's verdict was being discarded because main never stored it. Also watched make report its own Error 1 -> exit 2. 2026-10-03 proposed unprompted that the JSON checker exit 1 on failure. First version printed each error and then 'all 410 lines parse' with exit 0 — found by his own break check (appended 'abca'); named both problems when asked to read the last line. Chose report-all-then-exit-1 (as in 4.5), added fail_count and `if fail_count: sys.exit(1)`, then checked $? himself: 1 broken, 0 clean. Needed to be shown `echo $?` (typed `echo $` first).
 
 ## test-helper-function
 - status: practicing
@@ -988,8 +988,8 @@
 - status: practicing
 - depends-on: enums, conditionals
 - introduced: 2026-09-25
-- last-reviewed: 2026-09-25
-- evidence: proposed a switch himself for mapping a FlightMode to text ("like if branches but because its specified we use switch"). Syntax was shown; wrote mode_to_string with a return-per-case for all four modes correctly. Missed the fallback return; -Wreturn-type caught it. Worked out that an out-of-range value falls through every case ("it wont do anything and maybe wont return anything"), predicted a default would show UNKNOWN at runtime, and was told why the fallback belongs after the switch (keeps -Wswitch alive). Why-after-switch was supplied, not produced - re-ask cold later.
+- last-reviewed: 2026-10-03
+- evidence: proposed a switch himself for mapping a FlightMode to text ("like if branches but because its specified we use switch"). Syntax was shown; wrote mode_to_string with a return-per-case for all four modes correctly. Missed the fallback return; -Wreturn-type caught it. Worked out that an out-of-range value falls through every case ("it wont do anything and maybe wont return anything"), predicted a default would show UNKNOWN at runtime, and was told why the fallback belongs after the switch (keeps -Wswitch alive). Why-after-switch was supplied, not produced - re-ask cold later. 2026-10-03 spaced review (8 days): partial. Said a default would let a missing case compile quietly (right) but that the current code 'returns unknown' — missed that -Wswitch + -Werror stops the build first. Did not follow the first explanation of why the fallback sits after the switch; the side-by-side default-vs-after-switch code landed. Stays practicing; re-ask cold again.
 
 ## string-literals
 - status: introduced
@@ -1002,8 +1002,8 @@
 - status: practicing
 - depends-on: functions-over-main
 - introduced: 2026-09-25
-- last-reviewed: 2026-09-25
-- evidence: third occurrence (4.5 twice, 5.1 once): called print_mode(drone.mode) with nothing receiving the result. Traced the path when asked where "NAVIGATE" went, and answered "i need to do printf". The misleading name made the bare call look complete.
+- last-reviewed: 2026-10-03
+- evidence: third occurrence (4.5 twice, 5.1 once): called print_mode(drone.mode) with nothing receiving the result. Traced the path when asked where "NAVIGATE" went, and answered "i need to do printf". The misleading name made the bare call look complete. 2026-10-03 fourth instance, same shape: the checker printed every error and then reported success with exit 0 — the verdict printed but never carried to the end. Caught by his own break check this time, before being asked.
 
 ## speed-vs-velocity
 - status: introduced
@@ -1032,3 +1032,45 @@
 - introduced: 2026-10-02
 - last-reviewed: 2026-10-02
 - evidence: 2026-10-02 replaced a planned float accumulator with an int tick_count and mission_time_s = TICK_S * ticks after seeing his own drift experiment fail. Named the int parameter `ticks` after being asked whether `mission_time_s` told the truth about what it held.
+
+## message-type-field
+- status: practicing
+- depends-on: data-contract, json
+- introduced: 2026-10-03
+- last-reviewed: 2026-10-03
+- evidence: 2026-10-03 task 5.4: the event field came from autocomplete, which he flagged. Asked what 'what kind of message is this' meant; given the dashboard's three different reactions. Proposed recognising ticks 'by the shape', then — after the timestamp and broken-promise gaps — wrote `{"event": "tick", ...` himself once asked which part of the arrival line did the telling. Wrote the promise every line has an event field and that event's fields.
+
+## designing-from-the-readers-seat
+- status: introduced
+- depends-on: data-contract
+- introduced: 2026-10-03
+- last-reviewed: —
+- evidence: 2026-10-03 given as the answer to 'how do i know to think of that': a reader needs (1) what kind of message, (2) its details. Asked 'who is this reader, what am i to do with this info' — pointed at his own project.md (server, state block, event log). Then drew the event-log rows for drone_activated and mission_init himself, which surfaced that every event needs mission_time_s. Had trouble with 'the row a person reads' until it was shown as a literal on-screen box.
+
+## design-for-written-requirements
+- status: introduced
+- depends-on: none
+- introduced: 2026-10-03
+- last-reviewed: —
+- evidence: 2026-10-03 asked directly 'how do i avoid anticipating too early'. Given three tests: written down or imagined; what already hurt; how expensive to change later (decide the expensive things now — the event field touches every line). Wanted the waypoint list in mission_init 'as i would want to display the waypoints maybe'; told the maybe fails test 1, but the list stays because the stream already carries it and 5.4 converts rather than removes.
+
+## single-source-of-truth
+- status: introduced
+- depends-on: none
+- introduced: 2026-10-03
+- last-reviewed: —
+- evidence: 2026-10-03 kept a waypoint-count field alongside the waypoint array 'because we already have waypoint count'. Told a JS array carries its own length, and two copies of one fact can disagree. Dropped the count.
+
+## python-basics
+- status: introduced
+- depends-on: none
+- introduced: 2026-10-03
+- last-reviewed: —
+- evidence: 2026-10-03 first Python: given a skeleton (enumerate over sys.stdin, try/except json.JSONDecodeError, f-strings). Filled in the except branch himself, added fail_count with += style assignment, and wrote `if fail_count: sys.exit(1) else: print(...); sys.exit(0)`. Tool only — Node replaces it in section 6.
+
+## make-echoes-commands
+- status: introduced
+- depends-on: make-targets, stdout-as-stream
+- introduced: 2026-10-03
+- last-reviewed: —
+- evidence: 2026-10-03 his checker flagged mkdir/gcc/./build/drone as invalid JSON when piping `make run`; asked why the drone's first line moved from line 4 to 2. Told make prints each recipe command it runs to stdout, so `make run` output is not pure contract — the server must launch ./build/drone directly.
