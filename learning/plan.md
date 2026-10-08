@@ -149,7 +149,7 @@ things" — judgment is built by consequences, not by instruction. Review at the
       - reviewed 2026-09-25: the propose-first format is KEPT for section 5 and beyond. Learner's reason: "i feel like i
         can explain my code more".
 
-### 5. The contract  [ ] in progress
+### 5. The contract  [x] complete
 **Deliverable:** the engine's output becomes structured data — one JSON object per tick, readable by a human and by a machine.
 **Concepts:** data-contract, json, serialization, line-based-protocol, stdout-as-stream
 **Format:** propose-first, carried over from section 4 (kept at the 2026-09-25 review).
@@ -205,7 +205,18 @@ things" — judgment is built by consequences, not by instruction. Review at the
         test that runs the whole mission would be slow. Also: on empty input `number` is never set, so the success print
         would crash; an empty stream is a real failure case.
       - still parked: a drone in MODE_FAILSAFE never ends the loop.
-- [ ] 5.5 The contract is held by the suite: a test fails if the engine's output stops matching the contract.
+- [x] 5.5 The contract is held by the suite: a test fails if the engine's output stops matching the contract.
+      - tests/check_json_lines.py now checks every event's fields and types against an EVENTS table copied from the
+        contract (plus each waypoint inside mission_init), and every message names the field or event at fault.
+      - `make test` depends on $(BUILD)/drone as well as test_drone, and runs two lines: unit tests first (fail fast),
+        then ./build/drone piped into the checker. First wiring piped test_drone into the checker by mistake; a pipe
+        only reports the last command's exit status, so the unit tests' verdict was lost.
+      - proven red by renaming battery_pct in main.c (every tick line failed, as predicted), green after reverting.
+      - empty stream fails on purpose: `number = 0` before the loop, `elif number == 0` prints 'Empty stream', exit 1.
+      - parked: make test takes ~20 s because of usleep. Not written in any requirement, small pain, one-line cheap fix;
+        decide the switch's shape in section 6, where the server needs the real-time pace.
+      - still parked: a drone in MODE_FAILSAFE never ends the loop. mode_change still lists COMPLETE as never emitted.
+      - the EVENTS table is a second copy of the contract: change the doc, change the checker.
 
 ### 6. The server  [ ] not started
 **Deliverable:** `node server.js` launches the C engine, reads its state, and serves a blank page at localhost:3000.

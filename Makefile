@@ -21,8 +21,9 @@ $(BUILD)/test_drone: src/drone.c src/drone.h tests/test_drone.c
 	gcc -Wall -Wextra -Werror -std=gnu11 -o $(BUILD)/test_drone src/drone.c tests/test_drone.c -lm
 
 
-test: $(BUILD)/test_drone
+test: $(BUILD)/test_drone $(BUILD)/drone
 	./$(BUILD)/test_drone
+	./$(BUILD)/drone | python3 tests/check_json_lines.py
 
 
 clean:
