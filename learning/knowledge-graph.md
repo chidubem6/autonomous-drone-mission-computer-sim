@@ -1096,3 +1096,23 @@
 - last-reviewed: 2026-10-08
 - evidence: 2026-10-08 task 5.5: extended his checker from 'parses' to 'matches the contract' (per-event field names and types), wired it into `make test` on the real ./build/drone, and watched it go red on a renamed field and green on the fix. Proposed naming the field in each message when asked what 'field does not exist' told a reader six weeks out.
 
+## refactoring
+- status: practicing
+- depends-on: regression-testing, contract-test
+- introduced: 2026-10-08
+- last-reviewed: 2026-10-09
+- evidence: 2026-10-08 chose on his own to commit the working checker BEFORE refactoring 'since everything works', so the refactor had a known-good point to diff against. Used `make test` green as the gate; it went red three times mid-refactor (list overwritten, name-vs-value type check, wrong object passed) and each was fixed until it was green again. Also restored the waypoints guards the refactor had dropped, which make test could not see because the real engine never sends that input.
+
+## function-parameters-and-return-values
+- status: practicing
+- depends-on: python-basics
+- introduced: 2026-10-08
+- last-reviewed: 2026-10-09
+- evidence: 2026-10-08 named the duplicated block himself (the two field/type loops) and, asked what differs between the copies, found both inputs: the expected-fields dict and the object being checked (the second after one prompt). Chose 'return a list of problem strings' over passing problems+number in, because line numbers are 'not the main job of the function'. First call site was `problems = [line, check_fields(...)]`, which overwrote the list; traced with concrete values to 'they get overwritten every loop'. Then `problems += [number, [...]]`; the per-reason append loop was handed to him as a one-blank skeleton (too much help — he said so). Wrote isinstance(expected_field, ...) checking the NAME; found 'it needs to be the value' via a debug print he added. Passed `message` instead of `waypoint` and asked why it still checked y_m — told the loop walks `expected`, never `obj`. Believed a problem reported by check_fields would make the caller skip; told a function can only report, the caller decides.
+
+## continue-and-guard-clauses
+- status: practicing
+- depends-on: conditionals, for-loop
+- introduced: 2026-10-08
+- last-reviewed: 2026-10-09
+- evidence: 2026-10-08 put `continue` inside the inner `for reason` loop expecting it to skip the waypoint loop; asked which loop it applied to, said 'the inner one'. Asked unprompted why the existing `if "event" not in message: ... continue` was needed, traced it to a KeyError on the next line himself and concluded continue applies to the nearest for/while. Proposed both guard shapes (positive if, negation guard). First guard checked isinstance(message["waypoints"]) without checking the key existed (KeyError); then dedented the inner if so it ran for every event (KeyError on drone_activated) — found from the indentation when asked to trace one line.

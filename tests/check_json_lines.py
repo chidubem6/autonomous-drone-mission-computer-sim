@@ -28,6 +28,20 @@ EVENTS = {
 
 WAYPOINT_FIELDS = {"x_m": float, "y_m": float, "altitude_m": float}
 
+"""
+check_fields() checks if an object has the expected fields
+if that field is present, then it checks if the field has the right type
+"""
+def check_fields(obj, expected):
+    problems = []
+    for expected_field, expected_field_type in expected:
+        if expected_field not in obj:
+            problems.append(f"{expected_field} is not present")
+        elif not isinstance(obj[expected_field], expected_field_type):
+            problems.append(f"{expected_field} has an invalid type")
+
+    return problems
+
 
 
 problems = []
@@ -57,39 +71,20 @@ for number, line in enumerate(sys.stdin, start=1):
             problems.append([number, f"{event} does not exist in contract"])
             continue
 
-        for field, expected_type in EVENTS[event].items():
+        for reason in check_fields(message, EVENTS[event].items()):
+            problems.append([number, reason])
 
-            if field not in message:
-                problems.append([number, f"{field} does not exist"])
-
-                
-            elif not isinstance(message[field], expected_type):
-                problems.append([number, f"{field} has invalid type"])
 
         if message["event"] == "mission_init":
             if "waypoints" not in message:
-                problems.append([number, "No waypoint field"])
                 continue
-
-            if not isinstance(message["waypoints"], list):
-                problems.append([number, "Waypoints field not a list"])
-                continue
-                
-
-
-            for waypoint in message["waypoints"]:
-                for field, expected_type in WAYPOINT_FIELDS.items():
-                    if field not in waypoint:
-                        problems.append([number, f"{field} does not exist"])
-
-                    elif not isinstance(waypoint[field], expected_type):
-                        problems.append([number, f"{field} has invalid type"])
-
-
+            
+            if isinstance(message["waypoints"], list):
+                for waypoint in message["waypoints"]:
+                    for reason in check_fields(waypoint, WAYPOINT_FIELDS.items()):
+                        problems.append([number, reason])
 
         
-
-
     except json.JSONDecodeError as err:
         problems.append([number, f"not JSON: {err}"])
 

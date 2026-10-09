@@ -217,6 +217,13 @@ things" — judgment is built by consequences, not by instruction. Review at the
         decide the switch's shape in section 6, where the server needs the real-time pace.
       - still parked: a drone in MODE_FAILSAFE never ends the loop. mode_change still lists COMPLETE as never emitted.
       - the EVENTS table is a second copy of the contract: change the doc, change the checker.
+      - 2026-10-09 refactor: the field/type loop now lives once in check_fields(obj, expected), returning problem
+        strings; the main loop attaches line numbers. make test green throughout the final version.
+      - parked 2026-10-09 (learner's call, 'park this to the side'): three ways to make the checker better, not yet
+        chosen — (1) catches more: the contract lists allowed values for flight_mode/previous_mode/new_mode that EVENTS
+        does not enforce; (2) survives stranger input: a line that is valid JSON but not an object (`5`), or a
+        waypoint that is not an object, is untested; (3) reads truer: leftover notes and a docstring placed above the
+        def rather than inside it. Revisit before section 6 relies on the contract.
 
 ### 6. The server  [ ] not started
 **Deliverable:** `node server.js` launches the C engine, reads its state, and serves a blank page at localhost:3000.
